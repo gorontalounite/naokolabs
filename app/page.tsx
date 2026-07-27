@@ -33,8 +33,8 @@ export default function Home() {
   return (
     <main>
       <nav className="nav" aria-label="Navigasi utama">
-        <a className="brand brand-logo-frame" href="#top" aria-label="NAOKOLABS, kembali ke atas">
-          <Image src="/brand/wordmark.png" alt="NAOKOLABS" className="brand-logo" width={170} height={80} priority />
+        <a className="brand brand-logo-lockup" href="#top" aria-label="NAOKOLABS, kembali ke atas">
+          <Image src="/brand/naokolabs-lockup.png" alt="NAOKOLABS" className="brand-logo" width={1965} height={481} priority />
         </a>
         <div className="nav-links">
           <a href="#work">Work</a>

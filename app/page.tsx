@@ -34,8 +34,7 @@ export default function Home() {
     <main>
       <nav className="nav" aria-label="Navigasi utama">
         <a className="brand" href="#top" aria-label="NAOKOLABS, kembali ke atas">
-          <span className="brand-dot" />
-          NAOKOLABS
+          <img src="/brand/wordmark.png" alt="NAOKOLABS — Brand. Content. Social." className="brand-logo" />
         </a>
         <div className="nav-links">
           <a href="#work">Work</a>
@@ -55,7 +54,7 @@ export default function Home() {
             konten, dan kehadiran sosial yang lebih matang.
           </p>
           <div className="hero-actions">
-            <a className="button button-dark" href="#contact">Diskusikan proyek <span>↗</span></a>
+            <a className="button button-dark" href="https://wa.me/62818966884?text=Halo%20NAOKOLABS%2C%20saya%20ingin%20mendiskusikan%20proyek." target="_blank" rel="noreferrer">Diskusikan proyek <span>↗</span></a>
             <a className="text-link" href="#work">Lihat arah kerja <span>↓</span></a>
           </div>
         </div>
@@ -120,9 +119,9 @@ export default function Home() {
 
       <section className="section section-shell why-section"><p className="eyebrow"><span /> Why NAOKOLABS</p><div className="why-grid"><article><b>01</b><h3>Direct collaboration</h3><p>Anda bekerja langsung dengan founder, bukan berpindah-pindah account manager.</p></article><article><b>02</b><h3>Built around context</h3><p>Strategi disusun berdasarkan kondisi bisnis, bukan sekadar mengikuti template.</p></article><article><b>03</b><h3>Small and adaptable</h3><p>Struktur kecil membuat proses lebih gesit serta mudah menyesuaikan scope.</p></article></div></section>
 
-      <section id="contact" className="contact section-shell"><div><p className="eyebrow eyebrow-light"><span /> Start a project</p><h2>Punya brand yang<br />perlu diperjelas<span className="accent">?</span></h2></div><div className="contact-copy"><p>Ceritakan bisnis, kebutuhan, atau ide yang sedang Anda bangun. Kita mulai dari percakapan sederhana.</p><a className="button button-light" href="mailto:hello@naokolabs.id?subject=Project%20Inquiry%20NAOKOLABS">Kirim project brief <span>↗</span></a><p className="contact-note">WhatsApp dan formulir project inquiry akan segera tersedia.</p></div></section>
+      <section id="contact" className="contact section-shell"><div><p className="eyebrow eyebrow-light"><span /> Start a project</p><h2>Punya brand yang<br />perlu diperjelas<span className="accent">?</span></h2></div><div className="contact-copy"><p>Ceritakan bisnis, kebutuhan, atau ide yang sedang Anda bangun. Kita mulai dari percakapan sederhana.</p><div className="contact-actions"><a className="button button-light" href="https://wa.me/62818966884?text=Halo%20NAOKOLABS%2C%20saya%20ingin%20mendiskusikan%20proyek." target="_blank" rel="noreferrer">Chat via WhatsApp <span>↗</span></a><a className="text-link text-link-light" href="mailto:naokolabs@gmail.com?subject=Project%20Inquiry%20NAOKOLABS">Kirim project brief <span>↗</span></a></div><p className="contact-note">WhatsApp 0818 966 884 · naokolabs@gmail.com</p></div></section>
 
-      <footer className="footer section-shell"><a className="brand brand-light" href="#top"><span className="brand-dot" /> NAOKOLABS</a><p>Independent creative lab<br />Indonesia</p><p>© {new Date().getFullYear()} NAOKOLABS</p></footer>
+      <footer className="footer section-shell"><a className="brand brand-light" href="#top">NAOKOLABS</a><p>Independent creative lab<br />Indonesia</p><p>© {new Date().getFullYear()} NAOKOLABS</p></footer>
     </main>
   );
 }

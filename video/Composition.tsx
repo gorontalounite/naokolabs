@@ -1,4 +1,4 @@
-import { AbsoluteFill, Img, Sequence, Video, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Img, Sequence, Video, staticFile, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { FPS, HEIGHT, WIDTH, type SpecScene, type VideoSpec } from "./spec";
 
 // Komposisi Remotion untuk dua gaya (D-23). Murni fungsi dari frame: sama di pratinjau dan render.
@@ -150,6 +150,28 @@ function ExScene({ scene, index, total, spec, pal }: { scene: SpecScene; index: 
   );
 }
 
+// Alamat berkas suara: URL penuh dipakai apa adanya (pratinjau), berkas lokal lewat staticFile (render).
+const src = (s: string) => (/^(https?:|blob:|data:)/.test(s) ? s : staticFile(s));
+
+// Backsound: masuk perlahan, mengecil saat ada narasi, keluar perlahan di akhir.
+function Music({ file, spec, starts }: { file: string; spec: VideoSpec; starts: number[] }) {
+  const total = spec.scenes.reduce((n, s) => n + s.frames, 0);
+  const hasVoice = (i: number) => !!spec.scenes[i].voiceSrc || spec.audio?.voice?.mode === "track";
+  return (
+    <Audio
+      src={src(file)}
+      loop
+      volume={(f) => {
+        const idx = starts.findIndex((st, i) => f >= st && f < st + spec.scenes[i].frames);
+        const base = idx >= 0 && hasVoice(idx) ? 0.18 : 0.55;
+        const fadeIn = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+        const fadeOut = interpolate(f, [total - 30, total], [1, 0], { extrapolateLeft: "clamp" });
+        return base * fadeIn * fadeOut;
+      }}
+    />
+  );
+}
+
 export function NaokoVideo({ spec }: { spec: VideoSpec }) {
   const pal = palette(spec);
   const starts = spec.scenes.map((_, i) => spec.scenes.slice(0, i).reduce((n, x) => n + x.frames, 0));
@@ -159,8 +181,11 @@ export function NaokoVideo({ spec }: { spec: VideoSpec }) {
       {spec.scenes.map((scene, i) => (
         <Sequence key={scene.id} from={starts[i]} durationInFrames={scene.frames}>
           <Scene scene={scene} index={i} total={spec.scenes.length} spec={spec} pal={pal} />
+          {scene.voiceSrc && <Audio src={src(scene.voiceSrc)} />}
         </Sequence>
       ))}
+      {spec.audio?.voice?.mode === "track" && <Audio src={src(spec.audio.voice.src)} />}
+      {spec.audio?.music && <Music file={spec.audio.music.src} spec={spec} starts={starts} />}
     </AbsoluteFill>
   );
 }

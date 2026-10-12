@@ -6,6 +6,7 @@ import { bundle } from "@remotion/bundler";
 import { ensureBrowser, renderMedia, selectComposition } from "@remotion/renderer";
 import type { VideoSpec } from "../video/spec";
 import { specFrames, FPS } from "../video/spec";
+import { prepareAudio } from "./audio";
 
 const [specPath, outPath] = process.argv.slice(2);
 if (!specPath || !outPath) {
@@ -13,12 +14,13 @@ if (!specPath || !outPath) {
   process.exit(2);
 }
 
-const spec = JSON.parse(readFileSync(specPath, "utf8")) as VideoSpec;
-if (!Array.isArray(spec.scenes) || spec.scenes.length === 0) throw new Error("Spesifikasi tanpa adegan");
-const frames = specFrames(spec);
-if (frames > 65 * FPS) throw new Error(`Durasi ${frames / FPS} detik melebihi batas 65 detik`);
 
 async function main() {
+  const raw = JSON.parse(readFileSync(specPath, "utf8")) as VideoSpec;
+  if (!Array.isArray(raw.scenes) || raw.scenes.length === 0) throw new Error("Spesifikasi tanpa adegan");
+  const spec = await prepareAudio(raw);
+  const frames = specFrames(spec);
+  if (frames > 65 * FPS) throw new Error(`Durasi ${frames / FPS} detik melebihi batas 65 detik`);
   const browserExecutable = process.env.REMOTION_BROWSER || undefined;
   if (!browserExecutable) await ensureBrowser();
 

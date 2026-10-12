@@ -1,7 +1,7 @@
 import type { Plan } from "@/lib/ai/schema";
 import type { LocalVideoMeta } from "@/lib/video-store";
 
-type Meta = { tone: string; exampleTitle?: string; brand: string; assetNames: Record<string, string>; plannerMode: "contoh" | "ai"; warnings: string[]; idea: string; voiceover?: { fileName: string; seconds: number } };
+type Meta = { tone: string; exampleTitle?: string; brand: string; assetNames: Record<string, string>; plannerMode: "contoh" | "ai"; warnings: string[]; idea: string; audio?: LocalVideoMeta["audio"]; voiceover?: { fileName: string; seconds: number } };
 
 // Ubah jawaban planner menjadi video lokal yang dipakai halaman detail video.
 export function planToVideo(plan: Plan, meta: Meta): LocalVideoMeta {
@@ -36,6 +36,7 @@ export function planToVideo(plan: Plan, meta: Meta): LocalVideoMeta {
     missingInputs: plan.missingInputs,
     warnings: meta.warnings,
     idea: meta.idea,
+    audio: meta.audio,
     voiceover: meta.voiceover,
     exampleTitle: meta.exampleTitle,
     brief: plan.brief,

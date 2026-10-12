@@ -65,6 +65,8 @@ export type LocalVideoMeta = SampleVideo & {
   missingInputs: string[];
   warnings: string[];
   idea?: string;
+  /** Pilihan suara dari Studio; dipakai untuk spesifikasi render. */
+  audio?: { voMode: "none" | "upload" | "ai"; voice: string; musicMode: "none" | "upload" | "library" };
   /** Voice-over milik pelanggan: narasi dan durasi adegan terkunci mengikuti rekaman. */
   voiceover?: { fileName: string; seconds: number };
   exampleTitle?: string;

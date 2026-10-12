@@ -50,13 +50,13 @@ function Step({ no, title, desc, children, id }: { no: number; title: string; de
   );
 }
 
-function Choice<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { id: T; title: string; text: string }[]; onChange: (v: T) => void }) {
+function Choice<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { id: T; title: string; text: string; disabled?: boolean }[]; onChange: (v: T) => void }) {
   return (
     <fieldset className="fieldset stack-s">
       <legend className="eyebrow" style={{ marginBottom: 8 }}>{label}</legend>
       <div className="options options-3">
         {options.map((o) => (
-          <button key={o.id} type="button" className="option" aria-pressed={value === o.id} onClick={() => onChange(o.id)}>
+          <button key={o.id} type="button" className="option" aria-pressed={value === o.id} disabled={o.disabled} onClick={() => onChange(o.id)}>
             <span className="option-title" style={{ fontSize: 15 }}>{o.title}</span>
             <span className="option-text">{o.text}</span>
           </button>
@@ -175,6 +175,7 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
         exampleTitle: ref ? ref.title : undefined,
         brand: brand.name ?? "",
         idea: draft.idea.trim(),
+        audio: { voMode: draft.voMode, voice: draft.voice, musicMode: draft.musicMode },
         voiceover: useUpload && voiceover ? { fileName: voiceover.fileName, seconds: voiceover.seconds } : undefined,
         assetNames: Object.fromEntries(assetList.map((a) => [a.id, a.name])),
         plannerMode: data.mode,
@@ -267,7 +268,7 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
         <Choice label="Backsound" value={draft.musicMode} onChange={(v) => { set("musicMode", v); setMusicError(""); }} options={[
           { id: "none", title: "Tanpa backsound", text: "Tidak ada musik latar" },
           { id: "upload", title: "Unggah backsound", text: "Musik milik Anda atau berlisensi" },
-          { id: "library", title: "Tambahkan musik", text: "Dari pustaka musik berlisensi NaokoLabs" },
+          { id: "library", title: "Musik pustaka (segera)", text: "Pustaka musik berlisensi belum tersedia", disabled: true },
         ]} />
         {draft.musicMode === "upload" && (
           music ? (

@@ -41,7 +41,7 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
     return index < current ? "done" : index === current ? "current" : "todo";
   };
 
-  const spec = useMemo(() => buildSpec({ style: video.styleId, title: video.title, scenes: state.scenes, brand }), [video.styleId, video.title, state.scenes, brand]);
+  const spec = useMemo(() => buildSpec({ style: video.styleId, title: video.title, scenes: state.scenes, brand, audio: local?.audio }), [video.styleId, video.title, state.scenes, brand, local?.audio]);
   const showPlan = status === "rencana" || status === "produksi";
   const showResult = !showPlan;
 

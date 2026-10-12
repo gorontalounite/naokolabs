@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "./config";
+import { authRequired, isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "./config";
 
 // Memperbarui sesi di setiap request dan melindungi /app.
 export async function updateSession(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
-  if (!data.user && (path === "/app" || path.startsWith("/app/"))) {
+  if (authRequired && !data.user && (path === "/app" || path.startsWith("/app/"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/masuk";
     url.search = "";

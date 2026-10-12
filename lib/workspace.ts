@@ -1,4 +1,4 @@
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { authRequired, isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
 export type Viewer =
@@ -10,7 +10,7 @@ export async function getViewer(): Promise<Viewer | null> {
   if (!isSupabaseConfigured) return { mode: "preview" };
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return null;
+  if (!auth.user) return authRequired ? null : { mode: "preview" };
 
   const [{ data: profile }, { data: memberships }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", auth.user.id).maybeSingle(),

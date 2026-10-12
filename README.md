@@ -32,6 +32,7 @@ Jangan memakai project atau organisasi Gorontalo Unite.
 
 1. Jalankan migrasi di `supabase/migrations/` (Supabase CLI `supabase db push`, atau tempel isinya di SQL Editor).
 2. Isi environment (lokal: `.env.local`, Vercel: Project Settings → Environment Variables) sesuai `.env.example`.
+   Selama pengembangan `AUTH_REQUIRED=false` membuka `/app` tanpa login; hapus variabel itu saat login diaktifkan.
 3. Authentication → URL Configuration: Site URL = domain aplikasi; Redirect URLs tambahkan
    `https://<domain>/auth/callback`, `http://localhost:3000/auth/callback`, dan untuk preview Vercel
    `https://naokolabs-*-gorontalounitemediahub-5403s-projects.vercel.app/**`.

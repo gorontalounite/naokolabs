@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/dashboard/LoginForm";
 import { safeNext } from "@/lib/safe-next";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { authRequired, isSupabaseConfigured } from "@/lib/supabase/config";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 export const metadata = { title: "Masuk" };
@@ -38,7 +38,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
         <LoginForm next={next} disabled={!isSupabaseConfigured} />
 
-        {!isSupabaseConfigured && <Link href="/app" className="btn btn-dark btn-block btn-center">Buka pratinjau dashboard</Link>}
+        {!authRequired && <Link href="/app" className="btn btn-dark btn-block btn-center">Buka pratinjau dashboard</Link>}
       </div>
     </main>
   );

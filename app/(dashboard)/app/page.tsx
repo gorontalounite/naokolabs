@@ -4,7 +4,7 @@ import { getViewer } from "@/lib/workspace";
 
 export const metadata = { title: "Studio Video" };
 
-export default async function StudioPage({ searchParams }: { searchParams: Promise<{ gaya?: string; ide?: string }> }) {
+export default async function StudioPage({ searchParams }: { searchParams: Promise<{ gaya?: string; contoh?: string; ide?: string }> }) {
   const params = await searchParams;
   const [viewer, styles] = await Promise.all([getViewer(), getVideoStyles()]);
   const name = viewer?.mode === "signed-in" ? (viewer.fullName ?? viewer.email.split("@")[0]) : null;
@@ -28,7 +28,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
       </section>
 
       <div className="section">
-        <Studio styles={styles} presetStyle={params.gaya} presetIdea={params.ide} />
+        <Studio styles={styles} presetStyle={params.gaya} presetExample={params.contoh} presetIdea={params.ide} />
       </div>
 
     </>

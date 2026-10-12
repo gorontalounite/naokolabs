@@ -8,22 +8,24 @@ import { AssetPicker, type PickedAsset } from "@/components/dashboard/AssetPicke
 import { StylePreview } from "@/components/dashboard/StylePreview";
 import type { Plan } from "@/lib/ai/schema";
 import { planToVideo } from "@/lib/plan-to-video";
+import { examplesForStyle, findExample } from "@/lib/style-examples";
 import { tones, voices, type VideoStyle } from "@/lib/video-data";
 import { saveLocalVideo } from "@/lib/video-store";
 
 const STORAGE_KEY = "naokolabs:studio-draft";
 const IDEA_MAX = 1000;
-const examples = ["3 alasan kopi lokal lebih segar", "Promo pembukaan cabang baru, diskon 20% minggu pertama", "Cara merawat sepatu kulit agar awet", "Ucapan Hari Santri dari brand kami"];
+const ideaExamples = ["3 alasan kopi lokal lebih segar", "Promo pembukaan cabang baru, diskon 20% minggu pertama", "Cara merawat sepatu kulit agar awet", "Ucapan Hari Santri dari brand kami"];
 
-type Draft = { idea: string; tone: string; styleId: string; vo: boolean; voice: string; music: boolean };
+type Draft = { idea: string; tone: string; styleId: string; exampleId: string; vo: boolean; voice: string; music: boolean };
 
-const initialDraft: Draft = { idea: "", tone: "promosi", styleId: "motion-graphic", vo: true, voice: voices[0].id, music: true };
+const initialDraft: Draft = { idea: "", tone: "promosi", styleId: "motion-graphic", exampleId: "", vo: true, voice: voices[0].id, music: true };
 
 function pickDraft(raw: Partial<Draft>): Draft {
   const d = { ...initialDraft };
   if (typeof raw.idea === "string") d.idea = raw.idea.slice(0, IDEA_MAX);
   if (tones.some((t) => t.id === raw.tone)) d.tone = raw.tone!;
   if (typeof raw.styleId === "string") d.styleId = raw.styleId;
+  if (typeof raw.exampleId === "string") d.exampleId = raw.exampleId;
   if (typeof raw.vo === "boolean") d.vo = raw.vo;
   if (voices.some((v) => v.id === raw.voice)) d.voice = raw.voice!;
   if (typeof raw.music === "boolean") d.music = raw.music;
@@ -46,7 +48,7 @@ function Step({ no, title, desc, children }: { no: number; title: string; desc?:
   );
 }
 
-export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle[]; presetStyle?: string; presetIdea?: string }) {
+export function Studio({ styles, presetStyle, presetExample, presetIdea }: { styles: VideoStyle[]; presetStyle?: string; presetExample?: string; presetIdea?: string }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initialDraft);
   const [error, setError] = useState("");
@@ -67,12 +69,16 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
       // Storage diblokir atau draf rusak: mulai dari awal.
     }
     if (!styles.some((s) => s.id === next.styleId)) next = { ...next, styleId: styles[0]?.id ?? initialDraft.styleId };
-    if (presetStyle && styles.some((s) => s.id === presetStyle)) next = { ...next, styleId: presetStyle };
+    if (presetStyle && styles.some((s) => s.id === presetStyle)) next = { ...next, styleId: presetStyle, exampleId: examplesForStyle(presetStyle)[0]?.id ?? "" };
+    const preset = findExample(presetExample);
+    if (preset && styles.some((s) => s.id === preset.styleId)) next = { ...next, styleId: preset.styleId, exampleId: preset.id };
+    // Contoh harus milik gaya yang dipilih.
+    if (next.exampleId && findExample(next.exampleId)?.styleId !== next.styleId) next = { ...next, exampleId: "" };
     if (presetIdea) next = { ...next, idea: presetIdea.slice(0, IDEA_MAX) };
     // eslint-disable-next-line react-hooks/set-state-in-effect -- memulihkan draf setelah hidrasi
     setDraft(next);
     loaded.current = true;
-  }, [presetStyle, presetIdea, styles]);
+  }, [presetStyle, presetExample, presetIdea, styles]);
 
   useEffect(() => {
     if (!loaded.current) return;
@@ -89,6 +95,8 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
   };
 
   const style = styles.find((s) => s.id === draft.styleId) ?? styles[0];
+  const examples = examplesForStyle(draft.styleId);
+  const example = findExample(draft.exampleId);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -126,6 +134,7 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
           idea: draft.idea.trim(),
           tone: draft.tone,
           styleId: draft.styleId,
+          exampleId: example ? example.id : undefined,
           vo: draft.vo,
           voice: draft.voice,
           music: draft.music,
@@ -141,6 +150,7 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
       const video = planToVideo(data.plan as Plan, {
         tone: draft.tone,
         styleId: draft.styleId,
+        exampleTitle: example?.title,
         brand: brand.name ?? "",
         idea: draft.idea.trim(),
         assetNames: Object.fromEntries(valid.map((a) => [a.key, a.name])),
@@ -174,7 +184,7 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
           <div className="stack-s">
             <span className="eyebrow">Contoh ide</span>
             <div className="idea-examples">
-              {examples.map((ex) => (
+              {ideaExamples.map((ex) => (
                 <button key={ex} type="button" className="chip" onClick={() => { set("idea", ex); ideaRef.current?.focus(); }}>{ex}</button>
               ))}
             </div>
@@ -193,7 +203,7 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
       <Step no={2} title="Pilih gaya video" desc="Lihat contoh gerakannya, lalu pilih yang paling cocok dengan pesan Anda.">
         <div className="style-grid" role="group" aria-label="Gaya video">
           {styles.map((s) => (
-            <button key={s.id} type="button" className="style-option" aria-pressed={draft.styleId === s.id} onClick={() => { set("styleId", s.id); setAssetError(""); }}>
+            <button key={s.id} type="button" className="style-option" aria-pressed={draft.styleId === s.id} onClick={() => { setDraft((d) => ({ ...d, styleId: s.id, exampleId: d.styleId === s.id ? d.exampleId : (examplesForStyle(s.id)[0]?.id ?? "") })); setError(""); setAssetError(""); }}>
               <span className="style-option-check" aria-hidden="true"><Check size={14} /></span>
               <StylePreview styleId={s.id} />
               <span className="style-option-name">{s.name}</span>
@@ -202,6 +212,26 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
             </button>
           ))}
         </div>
+        {examples.length > 0 && (
+          <fieldset className="fieldset stack-s">
+            <legend className="eyebrow" style={{ marginBottom: 8 }}>Acuan tampilan</legend>
+            <div className="options">
+              {examples.map((ex) => (
+                <button key={ex.id} type="button" className="option example-pick" aria-pressed={draft.exampleId === ex.id} onClick={() => set("exampleId", ex.id)}>
+                  <StylePreview styleId={ex.styleId} />
+                  <span>
+                    <span className="option-title" style={{ fontSize: 15 }}>Seperti contoh: {ex.title}</span>
+                    <span className="option-text">{ex.look}</span>
+                  </span>
+                </button>
+              ))}
+              <button type="button" className="option" aria-pressed={!example} onClick={() => set("exampleId", "")}>
+                <span className="option-title" style={{ fontSize: 15 }}>Bebas</span>
+                <span className="option-text">Ikuti gaya {style?.name} tanpa meniru contoh tertentu</span>
+              </button>
+            </div>
+          </fieldset>
+        )}
         {style && (
           <p className="notice" role="status">
             <strong>{style.name}:</strong> {style.description} <span className="hint">Cocok untuk {style.bestFor.toLowerCase()}.</span>{" "}

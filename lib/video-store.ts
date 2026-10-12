@@ -65,6 +65,7 @@ export type LocalVideoMeta = SampleVideo & {
   missingInputs: string[];
   warnings: string[];
   idea?: string;
+  exampleTitle?: string;
   brief?: Brief;
   durationReason?: string;
 };

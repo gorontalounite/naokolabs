@@ -476,3 +476,12 @@ h1, h2, h3, p { margin: 0; }
 .style-card-preview { width: min(180px, 60%); justify-self: center; }
 .studio-step .chips { flex-wrap: wrap; overflow: visible; }
 .idea-examples .chip { flex: 0 1 auto; max-width: 100%; min-height: 36px; padding: 7px 14px; white-space: normal; text-align: left; line-height: 1.3; }
+
+/* Contoh video di Katalog Gaya */
+.example { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.example > .btn { grid-column: 1 / -1; }
+.example-media video { display: block; width: 100%; aspect-ratio: 9 / 16; border-radius: 12px; background: var(--ink); object-fit: cover; }
+.example-body { display: grid; gap: 2px; align-content: start; min-width: 0; }
+.example-prompt { margin: 0; padding: 8px 10px; border-left: 3px solid var(--accent-strong); border-radius: 0 8px 8px 0; background: var(--surface); font-size: 14px; }
+.example-pick { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: center; }
+.example .sp-label { left: 4px; right: 4px; bottom: 4px; padding: 2px 3px; font-size: 9px; }

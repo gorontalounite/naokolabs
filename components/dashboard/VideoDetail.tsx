@@ -209,7 +209,7 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
           <div className="card">
             <p className="detail-label">Detail</p>
             <p className="card-text">Brand: {video.brand}</p>
-            <p className="card-text">Gaya: {style?.name}</p>
+            <p className="card-text">Gaya: {style?.name}{local?.exampleTitle ? ` · seperti contoh “${local.exampleTitle}”` : ""}</p>
             <p className="card-text">Durasi: ± {duration} detik · 9:16</p>
             <p className="card-text">Rencana: versi {state.planVersion}</p>
             <p className="card-text">Dibuat: {new Date(video.createdAt).toLocaleDateString("id-ID", { dateStyle: "long" })}</p>

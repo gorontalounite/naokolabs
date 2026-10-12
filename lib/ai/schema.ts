@@ -53,6 +53,7 @@ export const PlanRequestSchema = z.object({
   idea: z.string().trim().min(5).max(1000),
   tone: z.string().max(40),
   styleId: z.string().max(60),
+  exampleId: z.string().max(60).optional(),
   vo: z.boolean(),
   voice: z.string().max(60),
   music: z.boolean(),

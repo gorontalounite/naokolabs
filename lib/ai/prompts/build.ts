@@ -2,19 +2,22 @@ import type Anthropic from "@anthropic-ai/sdk";
 import type { PlanRequest } from "../schema";
 import { GLOBAL_RULES } from "./global";
 import { PLANNER_STAGE } from "./planner";
-import { STYLE_PROFILES, TONE_GUIDE } from "./styles";
+import { examplePrompt } from "./examples";
+import { stylePrompt } from "./styles/index";
+import { TONE_GUIDE } from "./tones";
 
-// Susunan prompt: [aturan global + tahap] → [profil gaya] → pesan pengguna berisi data.
+// Susunan prompt: [aturan global + tahap] → [system prompt gaya] → [arahan contoh video] → pesan pengguna berisi data.
 // Bagian stabil di depan dengan penanda cache, data klien di belakang (prompt caching = prefix match).
 export function buildPlannerPrompt(req: PlanRequest) {
   const system: Anthropic.TextBlockParam[] = [
     { type: "text", text: `${GLOBAL_RULES}\n\n${PLANNER_STAGE}`, cache_control: { type: "ephemeral" } },
-    {
-      type: "text",
-      text: STYLE_PROFILES[req.styleId] ?? STYLE_PROFILES["motion-graphic"],
-      cache_control: { type: "ephemeral" },
-    },
+    { type: "text", text: stylePrompt(req.styleId), cache_control: { type: "ephemeral" } },
   ];
+  // Contoh video hanya berlaku untuk gaya yang sama.
+  const example = examplePrompt(req.exampleId);
+  if (example && example.includes(`style="${req.styleId}"`)) {
+    system.push({ type: "text", text: `Pelanggan memilih video contoh berikut sebagai acuan tampilan dan ritme. Ikuti arahannya, tetapi isi dan fakta tetap dari ide dan brand kit pelanggan.\n${example}`, cache_control: { type: "ephemeral" } });
+  }
 
   const lines: string[] = [];
   lines.push("<pesanan>");

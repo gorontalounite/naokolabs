@@ -1,10 +1,12 @@
 "use client";
 
 import { CheckCircle2, Circle, Clapperboard, Copy, Download, LoaderCircle, Play, RefreshCw, RotateCcw, Wand2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BriefCard } from "@/components/dashboard/BriefCard";
 import { PlanEditor } from "@/components/dashboard/PlanEditor";
 import { RevisionForm } from "@/components/dashboard/RevisionForm";
+import { VideoPreview } from "@/components/dashboard/VideoPreview";
+import { buildSpec } from "@/video/spec";
 import { useVideoState, type LocalVideoMeta } from "@/lib/video-store";
 import { findStyle, revisionKinds, statusInfo, tones, videoSteps, type SampleVideo } from "@/lib/video-data";
 
@@ -14,6 +16,15 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
   const [dirty, setDirty] = useState(false);
   const [note, setNote] = useState("");
   const [revising, setRevising] = useState(false);
+  const [brand, setBrand] = useState<Record<string, string>>({});
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage hanya ada setelah hidrasi
+      setBrand(JSON.parse(localStorage.getItem("naokolabs:brand-kit") ?? "{}"));
+    } catch {
+      // Brand kit opsional.
+    }
+  }, []);
   const [askAi, setAskAi] = useState(false);
   const [requestText, setRequestText] = useState("");
   const { status } = state;
@@ -30,6 +41,7 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
     return index < current ? "done" : index === current ? "current" : "todo";
   };
 
+  const spec = useMemo(() => buildSpec({ style: video.styleId, title: video.title, scenes: state.scenes, brand }), [video.styleId, video.title, state.scenes, brand]);
   const showPlan = status === "rencana" || status === "produksi";
   const showResult = !showPlan;
 
@@ -67,6 +79,8 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
 
       <div className="detail-layout">
         <div className="stack">
+          {state.scenes.length > 0 && <VideoPreview spec={spec} />}
+
           {local?.brief && <BriefCard brief={local.brief} durationReason={local.durationReason} />}
 
           {showPlan && (

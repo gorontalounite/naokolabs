@@ -26,14 +26,14 @@ Urutan D–F di atas diuraikan menjadi tahap P1–P7. Alur Studio: **tulis ide �
 | Tahap | Pekerjaan | Hasil yang bisa diperiksa | Status |
 |---|---|---|---|
 | P1 | Studio tiga langkah; planner memilih gaya; storyboard sebagai panduan | Studio tanpa langkah gaya; `plan.style` terisi | Selesai |
-| P2 | **Komposisi Remotion dari storyboard**: JSON adegan → komponen React (teks kinetik, bentuk, kartu, diagram, footage) per gaya; pratinjau di browser dengan `@remotion/player` | Storyboard tampil sebagai video 1080×1920 tanpa suara di halaman video | Berikutnya |
-| P3 | **Render MP4** di worker: render lokal dulu (Chromium + FFmpeg), lalu pilih tempat render | MP4 dari storyboard contoh, durasi tepat | Menunggu keputusan tempat render |
+| P2 | **Komposisi Remotion dari storyboard**: JSON adegan → komponen React (teks kinetik, bentuk, kartu, diagram, footage) per gaya; pratinjau di browser dengan `@remotion/player` | Storyboard tampil sebagai video 1080×1920 tanpa suara di halaman video | Selesai untuk teks, bentuk, kartu, diagram; slot footage ada tapi belum tersambung (P5) |
+| P3 | **Render MP4** lewat GitHub Actions (D-24): workflow `render` menerima spesifikasi video (JSON), merender dengan Remotion + FFmpeg, mengunggah MP4 ke Supabase Storage | MP4 dari storyboard contoh, durasi tepat | Berikutnya |
 | P4 | **Suara**: ElevenLabs TTS per adegan (durasi adegan mengikuti audio), voice-over unggahan, backsound dengan ducking | MP4 bersuara; durasi per adegan cocok dengan audio | Setelah P3 |
 | P5 | **Footage**: unggah ke Supabase Storage, dipakai di komposisi (foto/video dalam kartu/bingkai) | Footage pelanggan tampil di MP4 | Setelah P3, paralel P4 |
 | P6 | **Antrean dan status**: tombol Produksi membuat pekerjaan, progres nyata, hasil bisa diunduh, perbaikan | Dari klik Produksi sampai unduh MP4 | Setelah P4 dan P5 |
 | P7 | Biaya nyata per video (token Claude, karakter ElevenLabs, waktu render) dicatat | Tabel biaya per video, dasar harga paket | Setelah P6 |
 
-Keputusan terbuka: **tempat render** (P3). Pilihan: server sendiri/VPS dengan Docker (biaya tetap, paling sederhana untuk pemakaian pribadi), Remotion Lambda di AWS (bayar per render, perlu akun AWS), atau GitHub Actions (gratis dalam batas, lambat). Rendering tidak bisa berjalan di fungsi Vercel biasa.
+Tempat render diputuskan: **GitHub Actions** (D-24), karena rendering tidak bisa berjalan di fungsi Vercel biasa. Konsekuensi: waktu tunggu beberapa menit per video (antrean runner + install + render), batas menit gratis per bulan, dan aplikasi memicu workflow lewat GitHub API dengan token terbatas yang disimpan sebagai secret Vercel.
 
 ## Stack yang telah diusulkan
 

@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import { Manrope, Playfair_Display } from "next/font/google";
+import { manrope, playfair } from "@/app/fonts";
 import { headers } from "next/headers";
 import "./site.css";
-
-const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-manrope" });
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "500"], style: ["normal", "italic"], variable: "--font-playfair" });
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();

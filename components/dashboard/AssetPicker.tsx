@@ -19,7 +19,7 @@ export type PickedAsset = {
 // Batas sementara di sisi browser; batas final ditetapkan bersama penyimpanan (docs/DECISIONS.md).
 const LIMITS: Record<AssetKind, { bytes: number; label: string }> = {
   gambar: { bytes: 10 * 1024 * 1024, label: "10 MB" },
-  video: { bytes: 300 * 1024 * 1024, label: "300 MB" },
+  video: { bytes: 50 * 1024 * 1024, label: "50 MB" },
   audio: { bytes: 30 * 1024 * 1024, label: "30 MB" },
   dokumen: { bytes: 20 * 1024 * 1024, label: "20 MB" },
 };
@@ -108,7 +108,7 @@ export function AssetPicker({
         <span className="empty-icon" aria-hidden="true"><Upload size={22} /></span>
         <div>
           <p className="card-title">Foto produk, logo, atau rekaman video</p>
-          <p className="hint">Gambar hingga 10 MB, video hingga 300 MB, maksimal 15 berkas.</p>
+          <p className="hint">Gambar hingga 10 MB, video hingga 50 MB, maksimal 15 berkas.</p>
         </div>
         <label htmlFor={inputId} className="btn">Pilih file / galeri</label>
         <input id={inputId} type="file" multiple accept={ACCEPT} className="sr-only" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
@@ -151,7 +151,7 @@ export function AssetPicker({
             Saya memiliki hak memakai aset ini untuk konten brand saya.
           </label>
           {rightsError && <p className="field-error" role="alert">{rightsError}</p>}
-          <p className="hint">Berkas masih di perangkat Anda. Unggah ke server aktif saat penyimpanan akun tersambung.</p>
+          <p className="hint">Berkas diunggah ke penyimpanan aman saat Anda klik &ldquo;Buat Storyboard&rdquo;.</p>
         </>
       )}
     </div>

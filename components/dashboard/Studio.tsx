@@ -8,6 +8,7 @@ import { VoiceoverUpload } from "@/components/dashboard/VoiceoverUpload";
 import type { Plan, Voiceover } from "@/lib/ai/schema";
 import { planToVideo } from "@/lib/plan-to-video";
 import { tones, voices } from "@/lib/video-data";
+import { uploadFootage, type StoredFootage } from "@/lib/footage-client";
 import { saveLocalVideo } from "@/lib/video-store";
 
 const STORAGE_KEY = "naokolabs:studio-draft";
@@ -81,6 +82,7 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
   const [music, setMusic] = useState<{ name: string; size: number } | null>(null);
   const [musicError, setMusicError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [progress, setProgress] = useState("");
   const loaded = useRef(false);
   const ideaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -149,6 +151,20 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
     setSubmitting(true);
     setError("");
     try {
+      // Footage diunggah dulu; bila penyimpanan belum aktif, storyboard tetap dibuat tanpa footage di video.
+      let footage: Record<string, StoredFootage> = {};
+      let skipped = "";
+      if (valid.length > 0) {
+        setProgress(`Mengunggah footage (0/${valid.length})…`);
+        const up = await uploadFootage(valid.map((a) => ({ key: a.key, file: a.file })), (d, t) => setProgress(`Mengunggah footage (${d}/${t})…`));
+        if (up.ok) footage = up.byKey;
+        else if (up.disabled) skipped = "Penyimpanan footage belum aktif, jadi footage belum ikut di video.";
+        else {
+          setError(up.error);
+          return;
+        }
+      }
+      setProgress("Menyusun storyboard…");
       const res = await fetch("/api/rencana", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -179,7 +195,8 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
         voiceover: useUpload && voiceover ? { fileName: voiceover.fileName, seconds: voiceover.seconds } : undefined,
         assetNames: Object.fromEntries(assetList.map((a) => [a.id, a.name])),
         plannerMode: data.mode,
-        warnings: (data.issues ?? []).map((i: { scene?: number; message: string }) => (i.scene ? `Adegan ${i.scene}: ${i.message}` : i.message)),
+        footage,
+        warnings: [...(skipped ? [skipped] : []), ...(data.issues ?? []).map((i: { scene?: number; message: string }) => (i.scene ? `Adegan ${i.scene}: ${i.message}` : i.message))],
       });
       saveLocalVideo(video);
       router.push(`/app/video/${video.id}`);
@@ -187,6 +204,7 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
       setError("Koneksi terputus. Periksa internet lalu coba lagi.");
     } finally {
       setSubmitting(false);
+      setProgress("");
     }
   };
 
@@ -290,7 +308,7 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
       </Step>
 
       <button type="submit" className="btn btn-primary btn-xl" disabled={submitting} aria-busy={submitting}>
-        {submitting ? <><LoaderCircle size={20} aria-hidden="true" className="spin" /> Menyusun storyboard…</> : <><Wand2 size={20} aria-hidden="true" /> Buat Storyboard</>}
+        {submitting ? <><LoaderCircle size={20} aria-hidden="true" className="spin" /> {progress || "Menyusun storyboard…"}</> : <><Wand2 size={20} aria-hidden="true" /> Buat Storyboard</>}
       </button>
       <p className="hint" style={{ textAlign: "center" }}>
         Gratis dan bisa diedit. Kuota baru terpakai saat Anda menyetujui dan klik &ldquo;Produksi&rdquo;.

@@ -1,7 +1,7 @@
 import type { Plan } from "@/lib/ai/schema";
 import type { LocalVideoMeta } from "@/lib/video-store";
 
-type Meta = { tone: string; exampleTitle?: string; brand: string; assetNames: Record<string, string>; plannerMode: "contoh" | "ai"; warnings: string[]; idea: string; audio?: LocalVideoMeta["audio"]; voiceover?: { fileName: string; seconds: number } };
+type Meta = { tone: string; exampleTitle?: string; brand: string; assetNames: Record<string, string>; plannerMode: "contoh" | "ai"; warnings: string[]; idea: string; footage?: LocalVideoMeta["footage"]; audio?: LocalVideoMeta["audio"]; voiceover?: { fileName: string; seconds: number } };
 
 // Ubah jawaban planner menjadi video lokal yang dipakai halaman detail video.
 export function planToVideo(plan: Plan, meta: Meta): LocalVideoMeta {
@@ -28,6 +28,7 @@ export function planToVideo(plan: Plan, meta: Meta): LocalVideoMeta {
       motion: [s.motion.enter, s.motion.action, s.motion.exit].filter(Boolean).join(" → "),
       sound: s.sound,
       icon: s.icon,
+      assetId: s.assetId && meta.assetNames[s.assetId] ? s.assetId : undefined,
       asset: s.assetId && meta.assetNames[s.assetId] ? { label: meta.assetNames[s.assetId], placeholder: false } : { label: "Visual sementara", placeholder: true },
     })),
     plannerMode: meta.plannerMode,
@@ -38,6 +39,7 @@ export function planToVideo(plan: Plan, meta: Meta): LocalVideoMeta {
     warnings: meta.warnings,
     idea: meta.idea,
     audio: meta.audio,
+    footage: meta.footage,
     voiceover: meta.voiceover,
     exampleTitle: meta.exampleTitle,
     brief: plan.brief,

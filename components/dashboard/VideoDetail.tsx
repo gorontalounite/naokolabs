@@ -6,6 +6,7 @@ import { BriefCard } from "@/components/dashboard/BriefCard";
 import { PlanEditor } from "@/components/dashboard/PlanEditor";
 import { RevisionForm } from "@/components/dashboard/RevisionForm";
 import { VideoPreview } from "@/components/dashboard/VideoPreview";
+import { footageUrls } from "@/lib/footage-client";
 import { buildSpec } from "@/video/spec";
 import { useVideoState, type LocalVideoMeta } from "@/lib/video-store";
 import { findStyle, revisionKinds, statusInfo, tones, videoSteps, type SampleVideo } from "@/lib/video-data";
@@ -17,6 +18,7 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
   const [note, setNote] = useState("");
   const [revising, setRevising] = useState(false);
   const [brand, setBrand] = useState<Record<string, string>>({});
+  const [urls, setUrls] = useState<Record<string, string>>({});
   useEffect(() => {
     try {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage hanya ada setelah hidrasi
@@ -41,7 +43,22 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
     return index < current ? "done" : index === current ? "current" : "todo";
   };
 
-  const spec = useMemo(() => buildSpec({ style: video.styleId, title: video.title, scenes: state.scenes, brand, audio: local?.audio }), [video.styleId, video.title, state.scenes, brand, local?.audio]);
+  const footage = local?.footage;
+  useEffect(() => {
+    const paths = Object.values(footage ?? {}).map((f) => f.path);
+    if (paths.length === 0) return;
+    let live = true;
+    footageUrls(paths).then((u) => live && setUrls(u));
+    return () => { live = false; };
+  }, [footage]);
+  const spec = useMemo(() => {
+    const scenes = state.scenes.map((sc) => {
+      const f = sc.assetId ? footage?.[sc.assetId] : undefined;
+      const url = f ? urls[f.path] : undefined;
+      return { ...sc, media: f && url ? { url, kind: f.kind } : undefined };
+    });
+    return buildSpec({ style: video.styleId, title: video.title, scenes, brand, audio: local?.audio });
+  }, [video.styleId, video.title, state.scenes, brand, local?.audio, footage, urls]);
   const showPlan = status === "rencana" || status === "produksi";
   const showResult = !showPlan;
 

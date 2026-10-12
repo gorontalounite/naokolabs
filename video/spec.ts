@@ -35,7 +35,7 @@ export type VideoSpec = {
 
 export const specFrames = (spec: VideoSpec) => spec.scenes.reduce((n, s) => n + s.frames, 0);
 
-type StoryboardScene = { id: string; seconds: number; screenText: string; narration: string; icon?: string };
+type StoryboardScene = { id: string; seconds: number; screenText: string; narration: string; icon?: string; media?: { url: string; kind: "gambar" | "video" } };
 export type AudioChoice = { voMode: "none" | "upload" | "ai"; voice: string; musicMode: "none" | "upload" | "library" };
 type BrandKit = { name?: string; handle?: string; tagline?: string; primary?: string; secondary?: string };
 
@@ -61,6 +61,7 @@ export function buildSpec(input: { style: string; title: string; scenes: Storybo
       lines: s.screenText.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 2),
       narration: s.narration,
       icon: s.icon,
+      media: s.media,
     })),
   };
 }

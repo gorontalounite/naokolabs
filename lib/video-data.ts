@@ -74,6 +74,8 @@ export type Scene = {
   motion?: string;
   sound?: string;
   icon?: string;
+  /** ID aset pelanggan yang dipakai adegan ini (kunci di footage video). */
+  assetId?: string;
 };
 
 export type SampleVideo = {

@@ -24,13 +24,12 @@ const LIMITS: Record<AssetKind, { bytes: number; label: string }> = {
   dokumen: { bytes: 20 * 1024 * 1024, label: "20 MB" },
 };
 const MAX_FILES = 15;
-const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,video/mp4,video/quicktime,video/webm,audio/mpeg,audio/mp4,audio/wav,audio/x-m4a,application/pdf,text/csv";
+// Footage saja: foto dan video. Voice-over dan backsound punya pemilih sendiri (D-22).
+const ACCEPT = "image/png,image/jpeg,image/webp,image/svg+xml,video/mp4,video/quicktime,video/webm";
 
 function kindOf(file: File): AssetKind | null {
   if (file.type.startsWith("image/")) return "gambar";
   if (file.type.startsWith("video/")) return "video";
-  if (file.type.startsWith("audio/")) return "audio";
-  if (file.type === "application/pdf" || file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv")) return "dokumen";
   return null;
 }
 
@@ -47,14 +46,12 @@ function formatSeconds(s: number) {
 export function AssetPicker({
   assets,
   onChange,
-  needsVideo,
   rights,
   onRightsChange,
   rightsError,
 }: {
   assets: PickedAsset[];
   onChange: (next: PickedAsset[] | ((prev: PickedAsset[]) => PickedAsset[])) => void;
-  needsVideo: boolean;
   rights: boolean;
   onRightsChange: (v: boolean) => void;
   rightsError?: string;
@@ -103,7 +100,6 @@ export function AssetPicker({
   };
 
   const valid = assets.filter((a) => !a.error);
-  const hasVideo = valid.some((a) => a.kind === "video");
 
   return (
     <div className="stack-s">
@@ -111,16 +107,13 @@ export function AssetPicker({
       <div className="upload-drop">
         <span className="empty-icon" aria-hidden="true"><Upload size={22} /></span>
         <div>
-          <p className="card-title">Logo, foto produk, rekaman video, atau audio</p>
-          <p className="hint">Gambar hingga 10 MB, video hingga 300 MB, audio 30 MB, PDF/CSV 20 MB.</p>
+          <p className="card-title">Foto produk, logo, atau rekaman video</p>
+          <p className="hint">Gambar hingga 10 MB, video hingga 300 MB, maksimal 15 berkas.</p>
         </div>
         <label htmlFor={inputId} className="btn">Pilih file / galeri</label>
         <input id={inputId} type="file" multiple accept={ACCEPT} className="sr-only" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
       </div>
 
-      {needsVideo && !hasVideo && (
-        <p className="notice notice-warning">Gaya &ldquo;UGC dari Video Anda&rdquo; membutuhkan minimal satu rekaman video.</p>
-      )}
 
       {assets.length > 0 && (
         <ul className="asset-list">

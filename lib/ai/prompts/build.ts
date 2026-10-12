@@ -2,7 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import type { PlanRequest } from "../schema";
 import { GLOBAL_RULES } from "./global";
 import { PLANNER_STAGE } from "./planner";
-import { examplePrompt } from "./examples";
+import { examplePrompt } from "./references";
 import { stylePrompt } from "./styles/index";
 import { TONE_GUIDE } from "./tones";
 
@@ -28,7 +28,17 @@ export function buildPlannerPrompt(req: PlanRequest) {
       ? "Voice-over: rekaman milik pelanggan (lihat <voiceover_pelanggan>); narration = transkrip persis"
       : `Voice-over: ${req.vo ? `aktif (${req.voice})` : "mati — kosongkan narration"}`,
   );
-  lines.push(`Musik latar: ${req.music ? "aktif" : "mati — kosongkan sound kecuali efek penting"}`);
+  const musicFile = req.assets.find((a) => a.kind === "audio");
+  lines.push(
+    req.musicSource === "upload" && musicFile
+      ? `Backsound: file milik pelanggan (${musicFile.name}); sound boleh menandai ketukan`
+      : req.musicSource === "library" || (req.music && req.musicSource !== "none")
+        ? "Backsound: musik dari pustaka NaokoLabs"
+        : "Backsound: tidak ada — kosongkan sound kecuali efek penting",
+  );
+  if (req.assets.filter((a) => a.kind === "gambar" || a.kind === "video").length === 0) {
+    lines.push("Footage: tidak ada — semua visual dibuat dari tipografi, bentuk, ikon, dan warna; assetId selalu null");
+  }
   lines.push("</pesanan>");
 
   if (req.brand && (req.brand.name || req.brand.handle || req.brand.tagline)) {

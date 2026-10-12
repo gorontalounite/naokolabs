@@ -129,7 +129,6 @@ export function samplePlan(req: PlanRequest): Plan {
   const cta = req.brand?.tagline?.trim() || `Simpan video ini dan ikuti ${handle || "kami"} untuk info berikutnya.`;
   const video = req.assets.find((a) => a.kind === "video");
   const image = req.assets.find((a) => a.kind === "gambar");
-  const ugc = req.styleId === "ugc-edit" && video;
 
   const points =
     idea.noun === "poin"
@@ -169,10 +168,10 @@ export function samplePlan(req: PlanRequest): Plan {
       seconds: b.seconds,
       screenText: b.screen,
       narration: req.vo ? b.narration : "",
-      visual: ugc ? `Potongan rekaman klien (${video.name}): ${b.visual.toLowerCase()}` : b.visual,
+      visual: i === 1 && video ? `Potongan rekaman klien (${video.name}): ${b.visual.toLowerCase()}` : b.visual,
       motion: { enter: i === 0 ? "Teks masuk dari bawah" : "Elemen bergeser dari adegan sebelumnya", action: "Kata kunci membesar sekali", exit: isLast ? "Tahan sampai akhir" : "Memudar ke adegan berikutnya" },
       sound: req.music ? (i === 0 ? "Ketukan pembuka" : "") : "",
-      assetId: ugc ? video.id : i === 1 && image ? image.id : null,
+      assetId: i === 1 && video ? video.id : i === 1 && image ? image.id : null,
     };
   });
   const duration = scenes.reduce((n, sc) => n + sc.seconds, 0);

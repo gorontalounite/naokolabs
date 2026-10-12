@@ -67,6 +67,7 @@ export const PlanRequestSchema = z.object({
   vo: z.boolean(),
   voice: z.string().max(60),
   music: z.boolean(),
+  musicSource: z.enum(["none", "upload", "library"]).optional().default("none"),
   brand: z
     .object({ name: z.string().max(120), handle: z.string().max(60), tagline: z.string().max(200) })
     .partial()

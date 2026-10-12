@@ -1,58 +1,54 @@
-import { Palette } from "lucide-react";
+import { Lock, Palette } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { StylePreview } from "@/components/dashboard/StylePreview";
-import { examplesForStyle } from "@/lib/style-examples";
-import { getVideoStyles } from "@/lib/catalog";
+import { ReferenceCard } from "@/components/dashboard/ReferenceCard";
+import { referenceThumbnail, references } from "@/lib/references";
+import { videoStyles } from "@/lib/video-data";
+import { getViewer } from "@/lib/workspace";
 
 export const metadata = { title: "Katalog Gaya" };
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
-export default async function StylesPage() {
-  const videoStyles = await getVideoStyles();
+// Katalog hanya untuk pengguna yang sudah login: video referensi sebagian besar karya pihak lain (D-22).
+export default async function StylesPage({ searchParams }: { searchParams: Promise<{ gaya?: string }> }) {
+  const [{ gaya }, viewer] = await Promise.all([searchParams, getViewer()]);
+
+  if (viewer?.mode !== "signed-in") {
+    return (
+      <>
+        <PageHeader icon={Palette} title="Katalog Gaya" />
+        <div className="empty">
+          <span className="empty-icon"><Lock size={26} aria-hidden="true" /></span>
+          <h2>Masuk untuk melihat katalog</h2>
+          <p>Katalog berisi video acuan dan prompt-nya, khusus untuk akun yang sudah masuk.</p>
+          <Link href="/masuk?next=/app/gaya" className="btn btn-primary">Masuk →</Link>
+        </div>
+      </>
+    );
+  }
+
+  const active = videoStyles.find((s) => s.id === gaya)?.id ?? videoStyles[0].id;
+  const items = references.filter((r) => r.style === active);
+
   return (
     <>
-      <PageHeader
-        icon={Palette}
-        title="Katalog Gaya Video"
-        subtitle="Pilih gaya yang paling cocok dengan pesan Anda. Gaya standar termasuk kuota langganan; gaya dengan label “Perlu penawaran” memakai biaya tambahan yang ditampilkan sebelum produksi."
-      />
-      <div className="grid-3">
+      <PageHeader icon={Palette} title="Katalog Gaya" />
+      <nav className="segment" aria-label="Gaya video" style={{ marginBottom: 20 }}>
         {videoStyles.map((s) => (
-          <article key={s.id} className="style-card">
-            <div className="row" style={{ justifyContent: "space-between" }}>
-              <h2>{s.name}</h2>
-              {s.tier === "quote" ? <span className="badge badge-warning">Perlu penawaran</span> : <span className="badge badge-success">Standar</span>}
-            </div>
-            <p className="tagline">{s.tagline}</p>
-            <p className="card-text">{s.description}</p>
-            <div className="style-meta">
-              <span><strong>Cocok untuk:</strong> {s.bestFor}</span>
-              <span><strong>Yang perlu disiapkan:</strong> {s.needs}</span>
-            </div>
-            {examplesForStyle(s.id).map((ex) => (
-              <div key={ex.id} className="example">
-                <div className="example-media">
-                  {ex.video ? (
-                    <video src={ex.video} poster={ex.poster ?? undefined} controls muted playsInline preload="metadata" aria-label={`Video contoh: ${ex.title}`} />
-                  ) : (
-                    <StylePreview styleId={s.id} label="Video contoh menyusul" />
-                  )}
-                </div>
-                <div className="example-body">
-                  <p className="detail-label">Contoh video</p>
-                  <p className="card-title">{ex.title}</p>
-                  <p className="hint">{ex.look}</p>
-                  <p className="detail-label" style={{ marginTop: 6 }}>Prompt (ide)</p>
-                  <blockquote className="example-prompt">{ex.idea}</blockquote>
-                </div>
-                <Link href={`/app?gaya=${s.id}&contoh=${ex.id}`} className="btn btn-block btn-center">Buat seperti contoh ini →</Link>
-              </div>
-            ))}
-            <Link href={`/app?gaya=${s.id}`} className="text-link" style={{ justifySelf: "center" }}>Pakai gaya ini tanpa contoh</Link>
-          </article>
+          <Link key={s.id} href={`/app/gaya?gaya=${s.id}`} aria-current={active === s.id ? "page" : undefined}>
+            {s.name} ({references.filter((r) => r.style === s.id).length})
+          </Link>
         ))}
-      </div>
+      </nav>
+      {items.length === 0 ? (
+        <p className="notice">Belum ada video acuan untuk gaya ini.</p>
+      ) : (
+        <div className="ref-grid">
+          {items.map((r) => (
+            <ReferenceCard key={r.id} item={{ id: r.id, file: r.file, title: r.title, style: r.style, prompt: r.prompt, thumbnail: referenceThumbnail(r.id), duration: r.duration, aspect: r.aspect }} />
+          ))}
+        </div>
+      )}
     </>
   );
 }

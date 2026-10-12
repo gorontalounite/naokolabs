@@ -22,6 +22,7 @@ export type VideoStyle = {
   tier: StyleTier;
 };
 
+// MVP hanya dua gaya (D-22).
 export const videoStyles: VideoStyle[] = [
   {
     id: "motion-graphic",
@@ -40,60 +41,6 @@ export const videoStyles: VideoStyle[] = [
     bestFor: "Edukasi produk, layanan, cara pakai",
     needs: "Poin yang ingin dijelaskan",
     tier: "standar",
-  },
-  {
-    id: "whiteboard",
-    name: "Whiteboard",
-    tagline: "Gambar muncul seperti digambar",
-    description: "Ikon dan tulisan muncul bertahap di latar putih, ditemani narasi.",
-    bestFor: "Materi edukasi, informasi publik",
-    needs: "Topik dan poin utama",
-    tier: "standar",
-  },
-  {
-    id: "ugc-edit",
-    name: "UGC dari Video Anda",
-    tagline: "Footage Anda, kami edit",
-    description: "Video yang Anda rekam sendiri dipotong, diberi teks, subtitle dan musik.",
-    bestFor: "Review produk, behind the scene, testimoni",
-    needs: "Rekaman video dari ponsel",
-    tier: "standar",
-  },
-  {
-    id: "stock-cinematic",
-    name: "Cinematic Stock",
-    tagline: "Footage berlisensi + narasi",
-    description: "Potongan video stok berlisensi yang disusun sinematik dengan narasi dan teks.",
-    bestFor: "Brand awareness, pariwisata, properti",
-    needs: "Gambaran suasana yang diinginkan",
-    tier: "standar",
-  },
-  {
-    id: "ilustrasi-2d",
-    name: "Ilustrasi 2D",
-    tagline: "Karakter & ilustrasi siap pakai",
-    description: "Ilustrasi datar yang bergerak sederhana, memakai aset ilustrasi yang sudah tersedia.",
-    bestFor: "Cerita ringan, konten anak muda",
-    needs: "Alur cerita singkat",
-    tier: "standar",
-  },
-  {
-    id: "presenter-ai",
-    name: "Presenter AI",
-    tagline: "Pembawa acara digital",
-    description: "Presenter AI di pembuka dan penutup, sisanya motion graphic. Durasi presenter 15–20 detik.",
-    bestFor: "Pengumuman resmi, perkenalan brand",
-    needs: "Naskah yang disetujui",
-    tier: "quote",
-  },
-  {
-    id: "cinematic-ai",
-    name: "Cinematic AI",
-    tagline: "Adegan dibuat AI",
-    description: "Adegan sinematik yang dibuat model video AI. Biaya mengikuti jumlah detik adegan.",
-    bestFor: "Iklan premium, konsep kreatif",
-    needs: "Konsep adegan",
-    tier: "quote",
   },
 ];
 
@@ -181,7 +128,7 @@ export const sampleVideos: SampleVideo[] = [
     id: "menu-musiman",
     title: "Menu musiman: es kopi aren",
     brand: "Ruang Sela",
-    styleId: "ugc-edit",
+    styleId: "motion-graphic",
     duration: 15,
     tone: "santai",
     status: "hasil",
@@ -194,7 +141,7 @@ export const sampleVideos: SampleVideo[] = [
     id: "hari-santri",
     title: "Ucapan Hari Santri",
     brand: "Ruang Sela",
-    styleId: "whiteboard",
+    styleId: "explainer",
     duration: 15,
     tone: "formal",
     status: "siap",

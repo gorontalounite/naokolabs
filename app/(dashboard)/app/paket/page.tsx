@@ -8,7 +8,7 @@ const plans = [
   {
     name: "Starter",
     desc: "Untuk usaha yang baru mulai rutin posting video.",
-    features: ["Kuota video per bulan", "Semua gaya standar", "Voice-over, musik & subtitle otomatis", "Brand kit (logo, warna, penutup)", "Unduh MP4 1080×1920 + caption"],
+    features: ["Kuota video per bulan", "Gaya Motion Graphic dan Explainer", "Voice-over dan backsound bila diminta, subtitle otomatis", "Brand kit (logo, warna, penutup)", "Unduh MP4 1080×1920 + caption"],
   },
   {
     name: "Bisnis",

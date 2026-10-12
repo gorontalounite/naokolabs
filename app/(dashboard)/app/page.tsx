@@ -1,5 +1,6 @@
 import { Studio } from "@/components/dashboard/Studio";
 import { getVideoStyles } from "@/lib/catalog";
+import { findReference } from "@/lib/references";
 import { getViewer } from "@/lib/workspace";
 
 export const metadata = { title: "Studio Video" };
@@ -7,6 +8,7 @@ export const metadata = { title: "Studio Video" };
 export default async function StudioPage({ searchParams }: { searchParams: Promise<{ gaya?: string; contoh?: string; ide?: string }> }) {
   const params = await searchParams;
   const [viewer, styles] = await Promise.all([getViewer(), getVideoStyles()]);
+  const ref = findReference(params.contoh);
   const name = viewer?.mode === "signed-in" ? (viewer.fullName ?? viewer.email.split("@")[0]) : null;
 
   return (
@@ -28,7 +30,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
       </section>
 
       <div className="section">
-        <Studio styles={styles} presetStyle={params.gaya} presetExample={params.contoh} presetIdea={params.ide} />
+        <Studio styles={styles} presetStyle={params.gaya} reference={ref ? { id: ref.id, title: ref.title, file: ref.file, style: ref.style } : null} presetIdea={params.ide} />
       </div>
 
     </>

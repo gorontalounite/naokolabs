@@ -9,8 +9,8 @@ export const guideModules: GuideModule[] = [
     intro: "Membuat video di NaokoLabs terdiri dari tiga langkah: tulis ide, setujui brief & storyboard, lalu unduh video.",
     steps: [
       { title: "Tulis ide singkat", body: "Di Studio Video tulis satu atau dua kalimat, misalnya “3 alasan kopi lokal lebih segar”. Sebut jumlah poin bila ada." },
-      { title: "Pilih nada bicara dan gaya video", body: "Pilih nada bicara seperti Promosi atau Edukasi, lalu pilih gaya video dari contoh gerakannya." },
-      { title: "Atur suara dan musik", body: "Nyalakan voice-over dan pilih suara, lalu musik latar bila perlu. Subtitle dibuat otomatis dari narasi." },
+      { title: "Pilih nada bicara dan gaya video", body: "Pilih nada bicara seperti Promosi atau Edukasi, lalu pilih Motion Graphic atau Explainer. Contoh video tiap gaya ada di Katalog Gaya (perlu masuk akun)." },
+      { title: "Tambahkan footage, voice-over, backsound (opsional)", body: "Unggah foto/video, rekaman voice-over, atau backsound milik Anda. Tanpa itu, video dibuat tanpa footage, tanpa suara dan tanpa musik, kecuali Anda memilih suara AI atau musik dari pustaka." },
       { title: "Klik “Buat Brief & Storyboard”", body: "Kami menyusun brief konten, storyboard, naskah dan caption. Durasi video ditentukan dari isi ide Anda. Langkah ini gratis dan belum memakai kuota." },
     ],
   },
@@ -54,7 +54,7 @@ export const guideModules: GuideModule[] = [
     intro: "Langganan bulanan memberi kuota video per bulan. Harga dan kuota tiap paket sedang difinalkan.",
     steps: [
       { title: "Rencana tidak memakai kuota", body: "Kuota baru terpakai saat Anda menyetujui rencana dan memulai produksi." },
-      { title: "Gaya premium", body: "Gaya berlabel “Perlu penawaran” memakai biaya tambahan yang ditampilkan sebelum produksi, tidak ditagih diam-diam." },
+      { title: "Dua gaya", body: "Paket saat ini mencakup Motion Graphic dan Explainer." },
       { title: "Kegagalan teknis", body: "Jika produksi gagal karena sistem, kuota tidak berkurang." },
     ],
   },

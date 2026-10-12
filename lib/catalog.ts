@@ -17,7 +17,8 @@ export async function getVideoStyles(): Promise<VideoStyle[]> {
       .order("sort_order")
       .abortSignal(AbortSignal.timeout(3000));
     if (error || !data?.length) return videoStyles;
-    return (data as StyleRow[]).map((r) => ({ id: r.id, name: r.name, tagline: r.tagline, description: r.description, bestFor: r.best_for, needs: r.needs, tier: r.tier }));
+    const allowed = new Set(videoStyles.map((v) => v.id));
+    return (data as StyleRow[]).filter((r) => allowed.has(r.id)).map((r) => ({ id: r.id, name: r.name, tagline: r.tagline, description: r.description, bestFor: r.best_for, needs: r.needs, tier: r.tier }));
   } catch {
     return videoStyles;
   }

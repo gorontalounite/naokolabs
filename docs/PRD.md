@@ -18,6 +18,8 @@ Input klien hanya **ide singkat** (D-18): satu atau dua kalimat topik, maksimal 
 
 Planner mengubah ide menjadi **brief konten** (tujuan, penonton, pesan utama, sudut cerita, poin isi, ajakan) dan **storyboard**. **Durasi tidak dipilih di awal**: planner menentukannya dari banyaknya isi ide (10–60 detik) dan menampilkan alasannya; setelah itu durasi mengikuti adegan yang diedit klien.
 
+Gaya (D-22): hanya **Motion Graphic** dan **Explainer**. Input opsional: footage (foto/video), voice-over (unggah atau suara AI bila diminta), backsound (unggah atau musik pustaka bila diminta). Tanpa input itu, video dibuat tanpa footage, tanpa suara, dan tanpa musik. Katalog Gaya (khusus akun yang sudah login) berisi video referensi dengan tombol "Lihat prompt".
+
 Pilihan lain: nada bicara (Edukasi, Promosi, Hook Viral, Santai, Formal); gaya video yang ditampilkan langsung di Studio beserta pratinjau gerak singkat (standar atau perlu penawaran); voice-over dan suaranya; musik latar. Subtitle selalu dibuat otomatis dari narasi, bukan pilihan.
 
 Sumber narasi (D-21): **Suara AI** (naskah dari planner, dibacakan suara AI), **Voice-over saya** (pelanggan mengunggah rekaman narasi jadi: MP3/M4A/WAV, 3–60 detik, maks. 4 MB; ditranskrip ElevenLabs Speech-to-Text dengan waktu per kata; narasi = transkrip persis, durasi dan batas adegan mengikuti rekaman, tidak bisa diedit di storyboard; ide menjadi opsional), atau **Tanpa narasi**. Pelanggan mengonfirmasi hak atas rekaman suara. File audio belum disimpan di server sampai penyimpanan akun aktif. Brand kit (nama, handle, logo, warna, ajakan penutup) diambil dari Pengaturan.

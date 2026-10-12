@@ -1,0 +1,53 @@
+# Keputusan dan pertanyaan terbuka
+
+Status: DRAF. 11 Oktober 2026.
+
+## Dari pengguna
+
+- D-01: Dashboard dengan login, database, form/CMS dan kemampuan lebih dari 10 integrasi.
+- D-02: Motion Graphic Reels/Story, Carousel, copywriting, layanan website.
+- D-03: Pembayaran → rencana/strategi/storyboard → persetujuan → produksi → hasil/caption → revisi terbatas → posting/jadwal.
+- D-04: Revisi hasil hanya media salah tempat, typo, pengucapan VO salah.
+- D-05: Jawaban terbaru: posting/penjadwalan dahulu, bukan pengelolaan iklan.
+- D-06 (digantikan D-07): Rancangan sebelumnya menunda paket dan memakai harga satuan tetap.
+- D-07: Arahan terbaru memakai PAYG berdasarkan komponen. Acuan fullset Rp350.000 satuan; paket 5 Rp1.250.000; paket 10 Rp2.000.000. Komponen yang tidak dipakai mengubah total. Breakdown harga masih analisis.
+- D-08: Skill dipasang pada aplikasi kemudian, tidak pada tahap ini.
+- D-09: UI dashboard wajib responsive di mobile untuk seluruh alur inti.
+- D-10: Katalog video mencakup UGC, Explainer, Motion Graphic, Cinematic, Illustration, Animation, Whiteboard; workflow lain dari referensi Higgsfield dievaluasi capability/biayanya sebelum dipasarkan.
+
+## Usulan, belum diputuskan
+
+- Aplikasi modular + worker produksi terpisah, queue/workflow persisten.
+- Next.js/TypeScript, Postgres/Supabase, render Remotion dalam container/sandbox.
+- Katalog layanan website dahulu; otomasi pembuatan website kemudian.
+- Persetujuan rencana mencakup naskah lengkap dan caption untuk mengurangi koreksi konsep setelah produksi.
+- Template produksi terbatas untuk pilot, kode AI bebas hanya jika dibutuhkan.
+- Provider AI/media dipanggil sesuai kebutuhan, tidak semua untuk setiap item.
+
+## Perlu keputusan sebelum checkout produksi
+
+1. Unit video: batas durasi, rasio/resolusi, VO termasuk atau opsional, backsound dan jumlah versi.
+2. Unit carousel: batas jumlah slide, ukuran, file output, editable source termasuk atau tidak.
+3. Harga: breakdown komponen/tier PAYG, arti footage included (stock/AI/custom), mixing paket, tax/fee, caption/posting, media premium/add-on dan batas HPP. Analisis ada di [PAYG](PAYG-PRICING.md).
+4. Revisi: jumlah putaran, tenggat, pihak yang memutuskan koreksi dalam cakupan, perubahan brief pra-approval.
+5. Payment: vendor, refund/cancel saat gagal atau sebelum approval.
+
+## Perlu keputusan sebelum fondasi
+
+Nama produk/domain; aplikasi baru atau reuse repo lama (tidak diasumsikan); roles/membership; metode login; brand per workspace; storage/upload limits; retensi; stack/hosting; siapa operator QC; model/voice yang tersedia pada akun.
+
+## Perlu keputusan sebelum publishing
+
+Jenis akun IG/FB/TikTok; format Reels/Story/carousel yang didukung tiap jalur; app ownership; scope/review/audit; caption/privasi; default timezone; batas editing jadwal; proses reconnect dan publish unknown.
+
+## Layanan website
+
+Jumlah halaman untuk multiple page, hosting/maintenance, ekstensi dan kepemilikan domain, renewal, CMS untuk website klien, alur approval dan delivery. Harga dari pengguna tetap dicatat; jangan otomatis menganggap semua detail termasuk.
+
+Setiap keputusan baru mencatat tanggal, alasan, dampak ke PRD/ARD/harga, dan keputusan lama yang digantikan.
+
+## Hasil penyusunan baseline pilot
+
+Pengguna meminta menetapkan cakupan dan menguji biaya. Cakupan video 30 detik/6 scene dan carousel 8 slide kini menjadi baseline uji di FULLSET-SPEC, bukan persetujuan syarat layanan publik. Subtitle video sederhana included pada baseline sebagai usulan; source editable/thumbnail/format tambahan di luar baseline. Dua putaran feedback/7 hari merupakan usulan operasional, bukan arahan asli pengguna.
+
+Tiga quote shot Higgsfield sudah diperoleh tanpa spending; ledger simulasi dan protocol dibuat. Harga final/perubahan target margin belum disetujui. Produksi aktual menunggu runtime/skill, aset uji dan billing budget yang sesuai. Definisi layanan standar/premium diperbarui lewat hasil actual pilot, bukan nama style saja.

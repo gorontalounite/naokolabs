@@ -214,6 +214,10 @@ h1, h2, h3, p { margin: 0; }
 .auth-card .page-title { font-size: 28px; }
 .notice { padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-muted); font-size: 13px; }
 
+.tabs-3 { grid-template-columns: repeat(3, 1fr); }
+.divider-text { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; }
+.divider-text::before, .divider-text::after { content: ""; flex: 1; height: 1px; background: var(--divider); }
+
 .empty { padding: 24px 16px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
 
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }

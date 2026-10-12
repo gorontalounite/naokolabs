@@ -21,5 +21,6 @@ export function currentLabel(pathname: string) {
   if (match) return match.label;
   if (pathname.startsWith("/app/rencana")) return "Pesanan";
   if (pathname.startsWith("/app/posting")) return "Posting & Kalender";
+  if (pathname.startsWith("/app/akun")) return "Akun";
   return "Beranda";
 }

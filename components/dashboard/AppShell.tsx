@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { currentLabel, isActive, navItems } from "@/lib/nav";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, footer }: { children: React.ReactNode; footer: string }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -49,7 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="sidebar">
         <Link href="/app" className="sidebar-brand">NaokoLabs</Link>
         {nav}
-        <p className="sidebar-foot">Dashboard Content</p>
+        <p className="sidebar-foot">{footer}</p>
       </aside>
 
       <div className="shell-main">
@@ -65,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             Menu
           </button>
-          <Link href="/masuk" className="account-button" aria-label="Akun">Akun</Link>
+          <Link href="/app/akun" className="account-button" aria-label="Akun">Akun</Link>
         </header>
 
         <main className="content">{children}</main>
@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             {nav}
-            <Link href="/masuk" className="nav-link" style={{ marginTop: 12 }} onClick={() => setMenuOpen(false)}>Akun</Link>
+            <Link href="/app/akun" className="nav-link" style={{ marginTop: 12 }} onClick={() => setMenuOpen(false)}>Akun</Link>
           </div>
         </div>
       )}

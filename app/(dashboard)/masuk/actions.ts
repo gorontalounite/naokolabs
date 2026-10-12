@@ -1,8 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeNext } from "@/lib/safe-next";
-import { isSupabaseConfigured, siteUrl } from "@/lib/supabase/config";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { error?: string; message?: string };
@@ -14,8 +15,13 @@ function readEmail(formData: FormData) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
 }
 
-function callbackUrl(next: string) {
-  return `${siteUrl()}/auth/callback?next=${encodeURIComponent(next)}`;
+// Alamat situs diambil dari request agar tautan email cocok untuk localhost, preview dan produksi.
+// Supabase tetap hanya menerima alamat yang terdaftar di Redirect URLs.
+async function callbackUrl(next: string) {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}/auth/callback?next=${encodeURIComponent(next)}`;
 }
 
 function notConfigured(): AuthState {
@@ -48,7 +54,7 @@ export async function signUpWithPassword(_: AuthState, formData: FormData): Prom
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName }, emailRedirectTo: callbackUrl(safeNext(formData.get("next"))) },
+    options: { data: { full_name: fullName }, emailRedirectTo: await callbackUrl(safeNext(formData.get("next"))) },
   });
   if (error) return { error: "Pendaftaran gagal. Coba lagi atau gunakan metode lain." };
   if (data.session) redirect(safeNext(formData.get("next")));
@@ -63,7 +69,7 @@ export async function sendMagicLink(_: AuthState, formData: FormData): Promise<A
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: callbackUrl(safeNext(formData.get("next"))) },
+    options: { emailRedirectTo: await callbackUrl(safeNext(formData.get("next"))) },
   });
   if (error) return { error: "Tautan belum terkirim. Tunggu sebentar lalu coba lagi." };
   return { message: "Tautan masuk sudah dikirim. Buka email Anda di perangkat ini." };
@@ -75,7 +81,7 @@ export async function sendPasswordReset(_: AuthState, formData: FormData): Promi
   if (!email) return { error: "Masukkan email yang valid." };
 
   const supabase = await createClient();
-  await supabase.auth.resetPasswordForEmail(email, { redirectTo: callbackUrl("/app/akun/password") });
+  await supabase.auth.resetPasswordForEmail(email, { redirectTo: await callbackUrl("/app/akun/password") });
   // Pesan sama untuk email terdaftar maupun tidak, agar tidak membocorkan akun.
   return { message: "Jika email terdaftar, tautan atur ulang password sudah dikirim." };
 }
@@ -85,7 +91,7 @@ export async function signInWithGoogle(formData: FormData) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: callbackUrl(safeNext(formData.get("next"))) },
+    options: { redirectTo: await callbackUrl(safeNext(formData.get("next"))) },
   });
   if (error || !data.url) redirect("/masuk?error=google");
   redirect(data.url);

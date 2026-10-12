@@ -33,15 +33,16 @@ npm run build
 
 ## Supabase
 
-Project: `dashboard-app` (ref `nrjffqsukrkbpgmlfyje`) di organisasi Supabase NaokoLabs.
+Project: `dashboard-app` (ref `gcsnfqakkrorchfaemeg`, Singapore) di organisasi Supabase NaokoLabs.
 Jangan memakai project atau organisasi Gorontalo Unite.
 
 1. Jalankan migrasi di `supabase/migrations/` (Supabase CLI `supabase db push`, atau tempel isinya di SQL Editor).
 2. Isi environment (lokal: `.env.local`, Vercel: Project Settings → Environment Variables) sesuai `.env.example`.
 3. Authentication → URL Configuration: Site URL = domain aplikasi; Redirect URLs tambahkan
-   `https://<domain>/auth/callback` dan `http://localhost:3000/auth/callback`.
+   `https://<domain>/auth/callback`, `http://localhost:3000/auth/callback`, dan untuk preview Vercel
+   `https://naokolabs-*-gorontalounitemediahub-5403s-projects.vercel.app/**`.
 4. Authentication → Providers → Google: isi Client ID/Secret dari Google Cloud (akun Google NaokoLabs).
-   Authorized redirect URI di Google: `https://nrjffqsukrkbpgmlfyje.supabase.co/auth/v1/callback`.
+   Authorized redirect URI di Google: `https://gcsnfqakkrorchfaemeg.supabase.co/auth/v1/callback`.
 5. Email bawaan Supabase dibatasi jumlahnya; ganti ke SMTP (kandidat: Resend) sebelum dipakai klien.
 
 Akses: `proxy.ts` mengarahkan tamu dari `/app` ke `/masuk`, layout `/app` memeriksa ulang di server,

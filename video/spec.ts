@@ -10,6 +10,8 @@ export type SpecScene = {
   frames: number;
   /** Berkas suara narasi adegan (diisi worker setelah TTS), relatif terhadap video/public. */
   voiceSrc?: string;
+  /** Nama ikon (video/icons.tsx). */
+  icon?: string;
   /** Baris teks di layar (maksimal 2). */
   lines: string[];
   narration: string;
@@ -33,7 +35,7 @@ export type VideoSpec = {
 
 export const specFrames = (spec: VideoSpec) => spec.scenes.reduce((n, s) => n + s.frames, 0);
 
-type StoryboardScene = { id: string; seconds: number; screenText: string; narration: string };
+type StoryboardScene = { id: string; seconds: number; screenText: string; narration: string; icon?: string };
 export type AudioChoice = { voMode: "none" | "upload" | "ai"; voice: string; musicMode: "none" | "upload" | "library" };
 type BrandKit = { name?: string; handle?: string; tagline?: string; primary?: string; secondary?: string };
 
@@ -49,14 +51,16 @@ export function buildSpec(input: { style: string; title: string; scenes: Storybo
       name: (b.name ?? "").trim(),
       handle: (b.handle ?? "").trim(),
       tagline: (b.tagline ?? "").trim(),
-      accent: b.primary && hex.test(b.primary) ? b.primary : "#C43A24",
-      ink: b.secondary && hex.test(b.secondary) ? b.secondary : "#171513",
+      // Merah bawaan formulir Brand Kit dianggap belum diisi; video memakai biru Apple (D-25).
+      accent: b.primary && hex.test(b.primary) && b.primary.toLowerCase() !== "#c43a24" ? b.primary : "#0071E3",
+      ink: b.secondary && hex.test(b.secondary) && b.secondary.toLowerCase() !== "#1d1d1b" ? b.secondary : "#1D1D1F",
     },
     scenes: input.scenes.map((s) => ({
       id: s.id,
       frames: Math.max(Math.round(s.seconds * FPS), FPS),
       lines: s.screenText.split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 2),
       narration: s.narration,
+      icon: s.icon,
     })),
   };
 }

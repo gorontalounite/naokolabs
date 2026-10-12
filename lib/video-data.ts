@@ -73,6 +73,7 @@ export type Scene = {
   purpose?: string;
   motion?: string;
   sound?: string;
+  icon?: string;
 };
 
 export type SampleVideo = {

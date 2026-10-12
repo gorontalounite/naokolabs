@@ -27,6 +27,7 @@ export function planToVideo(plan: Plan, meta: Meta): LocalVideoMeta {
       purpose: s.purpose,
       motion: [s.motion.enter, s.motion.action, s.motion.exit].filter(Boolean).join(" → "),
       sound: s.sound,
+      icon: s.icon,
       asset: s.assetId && meta.assetNames[s.assetId] ? { label: meta.assetNames[s.assetId], placeholder: false } : { label: "Visual sementara", placeholder: true },
     })),
     plannerMode: meta.plannerMode,

@@ -20,7 +20,7 @@ export function buildPlannerPrompt(req: PlanRequest) {
       : { type: "text", text: `${STYLE_CHOICE}\n\n${Object.values(STYLE_PROMPTS).join("\n\n")}`, cache_control: { type: "ephemeral" } },
   ];
   if (example) {
-    system.push({ type: "text", text: `Pelanggan memilih video contoh berikut sebagai acuan tampilan dan ritme. Ikuti arahannya, tetapi isi dan fakta tetap dari ide dan brand kit pelanggan.\n${example}`, cache_control: { type: "ephemeral" } });
+    system.push({ type: "text", text: `Pelanggan memilih video acuan berikut. Ambil ritme, struktur adegan, jumlah kata per layar, dan jenis gerak dari acuan. Palet, latar, dan huruf TETAP mengikuti arah visual NaokoLabs (latar putih, gaya Apple), bukan palet acuan. Isi dan fakta tetap dari ide dan brand kit pelanggan.\n${example}`, cache_control: { type: "ephemeral" } });
   }
 
   const lines: string[] = [];

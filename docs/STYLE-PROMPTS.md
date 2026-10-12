@@ -1,6 +1,6 @@
 # System prompt gaya video
 
-Dibuat otomatis dari kode (versi prompt 2026-10-12.3). Jangan edit file ini; ubah file di `lib/ai/prompts/` lalu jalankan `npm run prompts:export`.
+Dibuat otomatis dari kode (versi prompt 2026-10-12.4). Jangan edit file ini; ubah file di `lib/ai/prompts/` lalu jalankan `npm run prompts:export`.
 
 Urutan yang dikirim ke Claude: 1) aturan global + tahap rencana, 2) system prompt gaya, 3) arahan video referensi (bila dipilih), 4) ide pelanggan.
 
@@ -27,7 +27,7 @@ Ukuran dari 87 video referensi:
 - Durasi: median 20 detik; separuh video 15–30 detik.
 - Teks: median 3 kata per layar, 75% video ≤ 4 kata per layar. Huruf sans-serif tebal di 80 dari 87 video.
 - Potongan keras jarang: median satu potongan per ± 6 detik; perpindahan lain berupa gerak berkesinambungan (geser, skala, morf).
-- Latar: gelap di 46 video, terang di 37; warna latar menutupi sekitar seperempat piksel, sisanya elemen.
+- Latar: gelap di 46 video, terang di 37. Arah NaokoLabs menetapkan latar putih (lihat visual_system); statistik ini hanya untuk ritme dan kerapatan, bukan palet.
 - Kartu/panel muncul di 59 video, tampilan antarmuka (UI) di 49, logo di penutup di 65.
 - Ada audio di 79 dari 87 video.
 </reference_stats>
@@ -44,10 +44,13 @@ Ide pelanggan, nada bicara, brand kit, daftar aset (foto/video bila ada), voice-
 </story_arc>
 
 <visual_system>
-- Satu latar (terang atau gelap sesuai brand kit) + satu warna aksen brand + satu warna teks.
-- Teks layar ≤ 4 kata per layar, sans-serif tebal untuk kata utama; kata pendukung berat biasa.
-- Tanpa footage: bangun visual dari tipografi, bentuk sederhana, ikon garis, kartu/panel, dan grafik sederhana.
-- Dengan footage: foto/video pelanggan ditaruh di dalam kartu atau bingkai bersudut membulat, bukan tempel mentah layar penuh.
+Arah visual NaokoLabs (D-25): motion graphic bergaya Apple.
+- Latar putih #FFFFFF. Teks #1D1D1F, teks pendukung #86868B, kartu #F5F5F7, satu warna aksen (brand kit; bila kosong biru #0071E3). Dilarang: latar krem/beige/hangat, gradien, neon, bayangan berat.
+- Huruf SF Pro (Inter di server render), berat 700 untuk kata utama dan 500–600 untuk pendukung, jarak huruf rapat (−0,03em). ≤ 4 kata per layar.
+- Setiap adegan punya satu ikon garis (tebal garis 1,75) di dalam kotak bersudut besar (radius ≈ 28% sisi), warna aksen di atas tint aksen 10%. Pilih ikon dari daftar field icon.
+- Kartu abu sangat muda bersudut besar (radius 56–72 px) untuk poin isi; ruang kosong lega, elemen berada di tengah, tidak ramai.
+- Tanpa footage: bangun dari tipografi, ikon, dan kartu. Dengan footage: foto/video pelanggan di dalam kartu bersudut membulat, bukan layar penuh.
+- Penutup: tombol pil warna aksen berisi ajakan, nama brand dan handle di atasnya.
 </visual_system>
 
 <motion_language>
@@ -66,6 +69,7 @@ Setiap adegan di storyboard diisi ke field JSON berikut:
 - visual: apa yang tampil, urut dari yang paling penting; sebut posisi (atas, tengah, bawah) dan elemen yang dipertahankan dari adegan sebelumnya.
 - motion.enter / motion.action / motion.exit: cara elemen masuk, satu aksi utama, lalu cara keluar atau berubah menjadi adegan berikutnya.
 - sound: cue suara yang menandai aksi utama, atau kosong.
+- icon: satu ikon dari daftar ini yang mewakili isi adegan: sparkles, zap, coffee, utensils, shirt, shopping-bag, package, tag, percent, gift, calendar, clock, hourglass, map-pin, truck, house, phone, mail, message-circle, megaphone, heart, star, users, leaf, lightbulb, rocket, camera, music, book-open, search, credit-card, wallet, banknote, qr-code, smartphone, wifi, lock, shield-check, circle-check, trending-up, chart-column, layers, globe, wrench. Pilih yang artinya paling dekat; jangan mengulang ikon yang sama di adegan berurutan.
 - assetId: ID aset pelanggan yang dipakai, atau null bila visual sementara (placeholder).
 Pemeriksaan per adegan: apa yang sekarang bisa dikatakan penonton yang sebelumnya tidak bisa? Bila tidak ada, hapus adegannya.
 </scene_spec>
@@ -110,7 +114,7 @@ Kemampuan produksi NaokoLabs saat ini (jangan merencanakan di luar ini):
 - Fakta hanya dari ide pelanggan dan brand kit. Harga, tanggal, alamat, angka, testimoni, dan klaim yang tidak disebut ditulis sebagai kebutuhan di missingInputs, bukan dikarang.
 - Satu ide per adegan, satu aksi utama per adegan, elemen lain diam.
 - Hapus adegan yang tidak menambah pemahaman. Hapus label yang mengulang narasi.
-- Hindari visual klise: gradien ungu-biru, neon, blob 3D, partikel melayang, glitch, angka palsu, kartu judul gradien.
+- Hindari visual klise: gradien ungu-biru, neon, blob 3D, partikel melayang, glitch, angka palsu, kartu judul gradien, dan latar krem/beige/hangat.
 - Brand kit (nama, handle, warna, logo, ajakan penutup) diutamakan di atas palet bawaan gaya.
 - Rencana ini ditinjau dan disetujui pelanggan sebelum produksi. Jangan menjanjikan hasil yang tidak bisa diproduksi.
 </rules>
@@ -1528,7 +1532,7 @@ Ukuran dari 26 video referensi:
 - Hampir tanpa potongan keras: median satu potongan per ± 6,5 detik, sebagian besar satu kanvas yang terus berubah.
 - Teks: median 4 kata per layar. Huruf sans-serif tebal di 24 dari 26 video.
 - Kartu/panel di 22 video, grafik atau diagram batang di 18, ikon di 18; garis/panah penghubung atau grid bantu sering dipakai.
-- Latar terang di 17 video, gelap di 9.
+- Latar terang di 17 video, gelap di 9. Arah NaokoLabs menetapkan latar putih (lihat visual_system).
 - Ada audio di 23 dari 26 video.
 </reference_stats>
 
@@ -1546,10 +1550,13 @@ Jumlah langkah mengikuti ide. Jangan menambah langkah yang tidak ada.
 </story_arc>
 
 <visual_system>
-- Satu kanvas yang dipertahankan sepanjang video; elemen diganti bentuk, bukan diganti layar.
-- Latar terang netral sebagai bawaan (gelap bila brand kit gelap), satu warna aksen untuk langkah yang sedang dibahas, abu untuk konteks.
-- Kartu bernomor, ikon garis, panah/garis penghubung, grafik batang sederhana. Label ≤ 4 kata.
-- Tanpa footage: semua dari diagram dan tipografi. Dengan footage: foto/video pelanggan masuk sebagai kartu bukti di adegan Langkah atau Hasil.
+Arah visual NaokoLabs (D-25): explainer bergaya Apple.
+- Satu kanvas yang dipertahankan sepanjang video; kartu langkah bertambah satu per adegan dan kartu sebelumnya tetap terlihat (diredupkan 55%).
+- Latar putih #FFFFFF, teks #1D1D1F, kartu #F5F5F7, satu warna aksen (brand kit; bila kosong biru #0071E3) untuk langkah yang sedang dibahas. Dilarang: latar krem/beige/hangat, gradien, neon.
+- Huruf SF Pro (Inter di server render), berat 700, ≤ 4 kata per kartu.
+- Setiap langkah: kartu bersudut besar berisi satu ikon garis di kotak bersudut (field icon) dan satu label pendek; langkah aktif berbingkai aksen dengan bayangan lembut.
+- Tanpa footage: semua dari kartu, ikon, dan tipografi. Dengan footage: foto/video pelanggan masuk sebagai kartu bukti di adegan Langkah atau Hasil.
+- Penutup: tombol pil warna aksen berisi ajakan, nama brand dan handle di atasnya.
 </visual_system>
 
 <motion_language>
@@ -1568,6 +1575,7 @@ Setiap adegan di storyboard diisi ke field JSON berikut:
 - visual: apa yang tampil, urut dari yang paling penting; sebut posisi (atas, tengah, bawah) dan elemen yang dipertahankan dari adegan sebelumnya.
 - motion.enter / motion.action / motion.exit: cara elemen masuk, satu aksi utama, lalu cara keluar atau berubah menjadi adegan berikutnya.
 - sound: cue suara yang menandai aksi utama, atau kosong.
+- icon: satu ikon dari daftar ini yang mewakili isi adegan: sparkles, zap, coffee, utensils, shirt, shopping-bag, package, tag, percent, gift, calendar, clock, hourglass, map-pin, truck, house, phone, mail, message-circle, megaphone, heart, star, users, leaf, lightbulb, rocket, camera, music, book-open, search, credit-card, wallet, banknote, qr-code, smartphone, wifi, lock, shield-check, circle-check, trending-up, chart-column, layers, globe, wrench. Pilih yang artinya paling dekat; jangan mengulang ikon yang sama di adegan berurutan.
 - assetId: ID aset pelanggan yang dipakai, atau null bila visual sementara (placeholder).
 Pemeriksaan per adegan: apa yang sekarang bisa dikatakan penonton yang sebelumnya tidak bisa? Bila tidak ada, hapus adegannya.
 </scene_spec>
@@ -1612,7 +1620,7 @@ Kemampuan produksi NaokoLabs saat ini (jangan merencanakan di luar ini):
 - Fakta hanya dari ide pelanggan dan brand kit. Harga, tanggal, alamat, angka, testimoni, dan klaim yang tidak disebut ditulis sebagai kebutuhan di missingInputs, bukan dikarang.
 - Satu ide per adegan, satu aksi utama per adegan, elemen lain diam.
 - Hapus adegan yang tidak menambah pemahaman. Hapus label yang mengulang narasi.
-- Hindari visual klise: gradien ungu-biru, neon, blob 3D, partikel melayang, glitch, angka palsu, kartu judul gradien.
+- Hindari visual klise: gradien ungu-biru, neon, blob 3D, partikel melayang, glitch, angka palsu, kartu judul gradien, dan latar krem/beige/hangat.
 - Brand kit (nama, handle, warna, logo, ajakan penutup) diutamakan di atas palet bawaan gaya.
 - Rencana ini ditinjau dan disetujui pelanggan sebelum produksi. Jangan menjanjikan hasil yang tidak bisa diproduksi.
 </rules>

@@ -1,3 +1,7 @@
+import { ICON_NAMES } from "@/video/icons";
+
+const ICON_LIST = ICON_NAMES.join(", ");
+
 // Bagian yang sama untuk semua system prompt gaya video.
 // Setiap gaya tetap punya prompt lengkap sendiri (lihat file per gaya); bagian ini disisipkan
 // agar spesifikasi adegan, aksesibilitas, dan kemampuan produksi tidak berbeda antar gaya.
@@ -11,6 +15,7 @@ Setiap adegan di storyboard diisi ke field JSON berikut:
 - visual: apa yang tampil, urut dari yang paling penting; sebut posisi (atas, tengah, bawah) dan elemen yang dipertahankan dari adegan sebelumnya.
 - motion.enter / motion.action / motion.exit: cara elemen masuk, satu aksi utama, lalu cara keluar atau berubah menjadi adegan berikutnya.
 - sound: cue suara yang menandai aksi utama, atau kosong.
+- icon: satu ikon dari daftar ini yang mewakili isi adegan: ${ICON_LIST}. Pilih yang artinya paling dekat; jangan mengulang ikon yang sama di adegan berurutan.
 - assetId: ID aset pelanggan yang dipakai, atau null bila visual sementara (placeholder).
 Pemeriksaan per adegan: apa yang sekarang bisa dikatakan penonton yang sebelumnya tidak bisa? Bila tidak ada, hapus adegannya.
 </scene_spec>`;
@@ -36,7 +41,7 @@ export const BASE_RULES = `<rules>
 - Fakta hanya dari ide pelanggan dan brand kit. Harga, tanggal, alamat, angka, testimoni, dan klaim yang tidak disebut ditulis sebagai kebutuhan di missingInputs, bukan dikarang.
 - Satu ide per adegan, satu aksi utama per adegan, elemen lain diam.
 - Hapus adegan yang tidak menambah pemahaman. Hapus label yang mengulang narasi.
-- Hindari visual klise: gradien ungu-biru, neon, blob 3D, partikel melayang, glitch, angka palsu, kartu judul gradien.
+- Hindari visual klise: gradien ungu-biru, neon, blob 3D, partikel melayang, glitch, angka palsu, kartu judul gradien, dan latar krem/beige/hangat.
 - Brand kit (nama, handle, warna, logo, ajakan penutup) diutamakan di atas palet bawaan gaya.
 - Rencana ini ditinjau dan disetujui pelanggan sebelum produksi. Jangan menjanjikan hasil yang tidak bisa diproduksi.
 </rules>`;

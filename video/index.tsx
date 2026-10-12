@@ -4,7 +4,8 @@ import { Composition, registerRoot, staticFile } from "remotion";
 import { NaokoVideo } from "./Composition";
 import { FPS, HEIGHT, WIDTH, specFrames, type VideoSpec } from "./spec";
 
-loadFont({ family: "Manrope", url: staticFile("manrope.woff2"), weight: "200 800" });
+// SF Pro tidak boleh didistribusikan dan tidak ada di server Linux; Inter adalah pengganti terdekat berlisensi terbuka.
+loadFont({ family: "Inter", url: staticFile("inter.woff2"), weight: "100 900" });
 
 const empty: VideoSpec = {
   style: "motion-graphic",

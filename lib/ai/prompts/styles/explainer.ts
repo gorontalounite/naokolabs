@@ -14,7 +14,7 @@ Ukuran dari 26 video referensi:
 - Hampir tanpa potongan keras: median satu potongan per ± 6,5 detik, sebagian besar satu kanvas yang terus berubah.
 - Teks: median 4 kata per layar. Huruf sans-serif tebal di 24 dari 26 video.
 - Kartu/panel di 22 video, grafik atau diagram batang di 18, ikon di 18; garis/panah penghubung atau grid bantu sering dipakai.
-- Latar terang di 17 video, gelap di 9.
+- Latar terang di 17 video, gelap di 9. Arah NaokoLabs menetapkan latar putih (lihat visual_system).
 - Ada audio di 23 dari 26 video.
 </reference_stats>
 
@@ -32,10 +32,13 @@ Jumlah langkah mengikuti ide. Jangan menambah langkah yang tidak ada.
 </story_arc>
 
 <visual_system>
-- Satu kanvas yang dipertahankan sepanjang video; elemen diganti bentuk, bukan diganti layar.
-- Latar terang netral sebagai bawaan (gelap bila brand kit gelap), satu warna aksen untuk langkah yang sedang dibahas, abu untuk konteks.
-- Kartu bernomor, ikon garis, panah/garis penghubung, grafik batang sederhana. Label ≤ 4 kata.
-- Tanpa footage: semua dari diagram dan tipografi. Dengan footage: foto/video pelanggan masuk sebagai kartu bukti di adegan Langkah atau Hasil.
+Arah visual NaokoLabs (D-25): explainer bergaya Apple.
+- Satu kanvas yang dipertahankan sepanjang video; kartu langkah bertambah satu per adegan dan kartu sebelumnya tetap terlihat (diredupkan 55%).
+- Latar putih #FFFFFF, teks #1D1D1F, kartu #F5F5F7, satu warna aksen (brand kit; bila kosong biru #0071E3) untuk langkah yang sedang dibahas. Dilarang: latar krem/beige/hangat, gradien, neon.
+- Huruf SF Pro (Inter di server render), berat 700, ≤ 4 kata per kartu.
+- Setiap langkah: kartu bersudut besar berisi satu ikon garis di kotak bersudut (field icon) dan satu label pendek; langkah aktif berbingkai aksen dengan bayangan lembut.
+- Tanpa footage: semua dari kartu, ikon, dan tipografi. Dengan footage: foto/video pelanggan masuk sebagai kartu bukti di adegan Langkah atau Hasil.
+- Penutup: tombol pil warna aksen berisi ajakan, nama brand dan handle di atasnya.
 </visual_system>
 
 <motion_language>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ICON_NAMES } from "@/video/icons";
 
 // Bentuk jawaban planner. Dipakai dua kali: dikirim ke Claude sebagai format output
 // (structured outputs) dan dipakai server untuk memeriksa jawaban.
@@ -17,6 +18,7 @@ export const PlanSceneSchema = z.object({
     exit: z.string(),
   }),
   sound: z.string().describe("Cue suara yang menandai aksi utama, atau kosong"),
+  icon: z.enum(ICON_NAMES).describe("Ikon yang mewakili isi adegan (D-25), dipilih dari daftar"),
   assetId: z.string().nullable().describe("ID aset klien yang dipakai, atau null bila placeholder"),
 });
 

@@ -22,6 +22,7 @@ export function VideoPreview({ spec }: { spec: VideoSpec }) {
           compositionWidth={WIDTH}
           compositionHeight={HEIGHT}
           controls
+          initialFrame={Math.min(24, Math.max(frames - 1, 0))}
           loop
           clickToPlay
           style={{ width: "100%", aspectRatio: "9 / 16" }}

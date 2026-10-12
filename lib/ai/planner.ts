@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { buildPlannerPrompt } from "./prompts/build";
 import { PROMPT_VERSION } from "./prompts/global";
+import type { IconName } from "@/video/icons";
 import { PlanSchema, type Plan, type PlanRequest, type Voiceover } from "./schema";
 import { hasErrors, validatePlan, type Issue } from "./validate";
 
@@ -121,6 +122,18 @@ const GOAL: Record<string, string> = {
   formal: "Penonton menerima informasi resmi dengan jelas",
 };
 
+// Mode contoh memilih ikon dengan kata kunci sederhana; mode AI memilih sendiri.
+const ICON_WORDS: [RegExp, IconName][] = [
+  [/kopi|seduh|minum|cafe|kafe/i, "coffee"], [/makan|menu|resep|masak/i, "utensils"], [/diskon|promo|hemat|potongan/i, "percent"], [/gratis|hadiah|bonus/i, "gift"],
+  [/bayar|qris|kartu|transaksi/i, "qr-code"], [/uang|harga|rupiah|biaya/i, "wallet"], [/kirim|antar|ongkir/i, "truck"], [/lokasi|alamat|jalan|buka di/i, "map-pin"],
+  [/jam|waktu|menit|detik|cepat/i, "clock"], [/tanggal|jadwal|minggu|hari/i, "calendar"], [/hubungi|telepon|wa\b|whatsapp/i, "message-circle"], [/aman|garansi|terpercaya/i, "shield-check"],
+  [/naik|tumbuh|hasil|untung/i, "trending-up"], [/ide|tips|cara|belajar/i, "lightbulb"], [/pelanggan|tim|komunitas|orang/i, "users"], [/baru|buka|peluncuran|launch/i, "rocket"],
+  [/segar|alami|organik|lokal/i, "leaf"], [/suka|cinta|favorit/i, "heart"],
+];
+export function pickIcon(text: string, fallback: IconName = "sparkles"): IconName {
+  return ICON_WORDS.find(([re]) => re.test(text))?.[1] ?? fallback;
+}
+
 // Mode contoh memilih gaya dengan kata kunci sederhana; mode AI memilih sendiri.
 export function detectStyle(text: string): "motion-graphic" | "explainer" {
   return /\b(cara|langkah|bagaimana|kenapa|mengapa|alasan|proses|bekerja|tahap|perbedaan|vs|tips)\b/i.test(text) ? "explainer" : "motion-graphic";
@@ -174,6 +187,7 @@ export function samplePlan(req: PlanRequest): Plan {
       screenText: b.screen,
       narration: req.vo ? b.narration : "",
       visual: i === 1 && video ? `Potongan rekaman klien (${video.name}): ${b.visual.toLowerCase()}` : b.visual,
+      icon: pickIcon(`${b.screen} ${b.narration}`, i === 0 ? "sparkles" : isLast ? "circle-check" : "layers"),
       motion: { enter: i === 0 ? "Teks masuk dari bawah" : "Elemen bergeser dari adegan sebelumnya", action: "Kata kunci membesar sekali", exit: isLast ? "Tahan sampai akhir" : "Memudar ke adegan berikutnya" },
       sound: req.music ? (i === 0 ? "Ketukan pembuka" : "") : "",
       assetId: i === 1 && video ? video.id : i === 1 && image ? image.id : null,
@@ -268,6 +282,7 @@ function sampleFromVoiceover(req: PlanRequest, vo: Voiceover): Plan {
       screenText: clip(sc.text, 6),
       narration: sc.text,
       visual: i === 1 && image ? `Foto dari aset klien: ${image.name}` : "Kata kunci dari kalimat ini tampil besar di tengah",
+      icon: pickIcon(sc.text, i === 0 ? "sparkles" : i === scenes.length - 1 ? "circle-check" : "layers"),
       motion: { enter: "Teks masuk mengikuti kata pertama yang diucapkan", action: "Kata kunci membesar saat diucapkan", exit: i === scenes.length - 1 ? "Tahan sampai akhir" : "Memudar ke adegan berikutnya" },
       sound: "",
       assetId: i === 1 && image ? image.id : null,

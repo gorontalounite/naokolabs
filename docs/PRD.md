@@ -18,7 +18,9 @@ Input klien hanya **ide singkat** (D-18): satu atau dua kalimat topik, maksimal 
 
 Planner mengubah ide menjadi **brief konten** (tujuan, penonton, pesan utama, sudut cerita, poin isi, ajakan) dan **storyboard**. **Durasi tidak dipilih di awal**: planner menentukannya dari banyaknya isi ide (10–60 detik) dan menampilkan alasannya; setelah itu durasi mengikuti adegan yang diedit klien.
 
-Pilihan lain: nada bicara (Edukasi, Promosi, Hook Viral, Santai, Formal); gaya video yang ditampilkan langsung di Studio beserta pratinjau gerak singkat (standar atau perlu penawaran); voice-over dan suaranya; musik latar. Subtitle selalu dibuat otomatis dari narasi, bukan pilihan. Brand kit (nama, handle, logo, warna, ajakan penutup) diambil dari Pengaturan.
+Pilihan lain: nada bicara (Edukasi, Promosi, Hook Viral, Santai, Formal); gaya video yang ditampilkan langsung di Studio beserta pratinjau gerak singkat (standar atau perlu penawaran); voice-over dan suaranya; musik latar. Subtitle selalu dibuat otomatis dari narasi, bukan pilihan.
+
+Sumber narasi (D-21): **Suara AI** (naskah dari planner, dibacakan suara AI), **Voice-over saya** (pelanggan mengunggah rekaman narasi jadi: MP3/M4A/WAV, 3–60 detik, maks. 4 MB; ditranskrip ElevenLabs Speech-to-Text dengan waktu per kata; narasi = transkrip persis, durasi dan batas adegan mengikuti rekaman, tidak bisa diedit di storyboard; ide menjadi opsional), atau **Tanpa narasi**. Pelanggan mengonfirmasi hak atas rekaman suara. File audio belum disimpan di server sampai penyimpanan akun aktif. Brand kit (nama, handle, logo, warna, ajakan penutup) diambil dari Pengaturan.
 
 Unggahan aset (logo, foto, rekaman untuk gaya UGC, PDF/CSV sebagai sumber) diperlakukan sebagai data, bukan instruksi ke agen. Spesifikasi dan batas yang belum ditetapkan tidak boleh diasumsikan oleh AI.
 

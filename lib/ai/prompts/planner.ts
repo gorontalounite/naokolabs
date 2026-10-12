@@ -18,4 +18,9 @@ Langkah kerja
 6. Subtitle dibuat otomatis dari narasi saat produksi; screenText tetap kata kunci, bukan subtitle.
 7. Adegan terakhir memuat ajakan dari brand kit bila ada; bila tidak, ajakan yang wajar sesuai goal.
 8. Caption posting (maksimal 2.200 karakter) sejalan dengan pesan, plus 3–6 hashtag relevan tanpa tanda #.
-9. Status "needs_input" hanya bila ide terlalu kabur untuk dibuat brief (misalnya satu kata tanpa konteks); isi missingInputs dengan pertanyaan spesifik.`;
+9. Bila ada <voiceover_pelanggan>, pelanggan sudah punya narasi jadi berupa rekaman suara:
+   - narration adalah teks transkrip PERSIS, dibagi berurutan ke adegan mengikuti batas kalimat; jangan mengubah, menambah, atau membuang kata.
+   - seconds setiap adegan mengikuti waktu kalimat di rekaman (selisih waktu mulai dan selesai, dibulatkan); duration sama dengan durasi rekaman dibulatkan.
+   - Brief disusun dari isi transkrip; ide pelanggan (bila ada) hanya konteks tambahan. durationReason menyebut bahwa durasi mengikuti voice-over.
+   - Pekerjaan Anda: teks layar, visual, gerak, dan suara yang mengikuti kata-kata yang sedang diucapkan.
+10. Status "needs_input" hanya bila ide terlalu kabur untuk dibuat brief (misalnya satu kata tanpa konteks); isi missingInputs dengan pertanyaan spesifik.`;

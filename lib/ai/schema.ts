@@ -49,8 +49,18 @@ export type PlanScene = z.infer<typeof PlanSceneSchema>;
 export type Brief = z.infer<typeof BriefSchema>;
 
 // Permintaan dari Studio ke server. Hanya ide singkat; durasi ditentukan planner (D-18).
+export const VoiceoverSegmentSchema = z.object({ text: z.string().max(1000), start: z.number().min(0), end: z.number().min(0) });
+
+// Voice-over jadi dari pelanggan: hasil transkripsi + waktu per kalimat (D-21).
+export const VoiceoverSchema = z.object({
+  fileName: z.string().max(200),
+  transcript: z.string().trim().min(1).max(5000),
+  seconds: z.number().min(3).max(65),
+  segments: z.array(VoiceoverSegmentSchema).min(1).max(300),
+});
+
 export const PlanRequestSchema = z.object({
-  idea: z.string().trim().min(5).max(1000),
+  idea: z.string().trim().max(1000).optional().default(""),
   tone: z.string().max(40),
   styleId: z.string().max(60),
   exampleId: z.string().max(60).optional(),
@@ -66,6 +76,9 @@ export const PlanRequestSchema = z.object({
     .max(15)
     .optional()
     .default([]),
-});
+  voiceover: VoiceoverSchema.optional(),
+}).refine((r) => r.idea.length >= 5 || !!r.voiceover, { message: "Tulis ide minimal 5 karakter atau unggah voice-over.", path: ["idea"] });
 
 export type PlanRequest = z.infer<typeof PlanRequestSchema>;
+export type Voiceover = z.infer<typeof VoiceoverSchema>;
+export type VoiceoverSegment = z.infer<typeof VoiceoverSegmentSchema>;

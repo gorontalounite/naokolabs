@@ -65,6 +65,8 @@ export type LocalVideoMeta = SampleVideo & {
   missingInputs: string[];
   warnings: string[];
   idea?: string;
+  /** Voice-over milik pelanggan: narasi dan durasi adegan terkunci mengikuti rekaman. */
+  voiceover?: { fileName: string; seconds: number };
   exampleTitle?: string;
   brief?: Brief;
   durationReason?: string;

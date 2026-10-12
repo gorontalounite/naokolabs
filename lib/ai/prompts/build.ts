@@ -23,7 +23,11 @@ export function buildPlannerPrompt(req: PlanRequest) {
   lines.push("<pesanan>");
   lines.push("Format: rasio 9:16 (Reels, Story, TikTok); durasi Anda tentukan dari isi ide");
   lines.push(TONE_GUIDE[req.tone] ?? TONE_GUIDE.promosi);
-  lines.push(`Voice-over: ${req.vo ? `aktif (${req.voice})` : "mati — kosongkan narration"}`);
+  lines.push(
+    req.voiceover
+      ? "Voice-over: rekaman milik pelanggan (lihat <voiceover_pelanggan>); narration = transkrip persis"
+      : `Voice-over: ${req.vo ? `aktif (${req.voice})` : "mati — kosongkan narration"}`,
+  );
   lines.push(`Musik latar: ${req.music ? "aktif" : "mati — kosongkan sound kecuali efek penting"}`);
   lines.push("</pesanan>");
 
@@ -40,8 +44,14 @@ export function buildPlannerPrompt(req: PlanRequest) {
   req.assets.forEach((a) => lines.push(`- id: ${a.id} | jenis: ${a.kind} | nama berkas: ${a.name}`));
   lines.push("</aset_pelanggan>");
 
+  if (req.voiceover) {
+    lines.push(`<voiceover_pelanggan durasi_detik="${req.voiceover.seconds.toFixed(1)}">`);
+    req.voiceover.segments.forEach((sg) => lines.push(`[${sg.start.toFixed(1)}–${sg.end.toFixed(1)}] ${sg.text}`));
+    lines.push("</voiceover_pelanggan>");
+  }
+
   lines.push("<ide>");
-  lines.push(req.idea);
+  lines.push(req.idea || "(tidak ada; susun brief dari voice-over)");
   lines.push("</ide>");
   lines.push("Susun brief, durasi, dan storyboard sesuai aturan dan format JSON yang diminta.");
 

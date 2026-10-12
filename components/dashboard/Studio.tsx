@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AssetPicker, type PickedAsset } from "@/components/dashboard/AssetPicker";
 import { StylePreview } from "@/components/dashboard/StylePreview";
-import type { Plan } from "@/lib/ai/schema";
+import { VoiceoverUpload } from "@/components/dashboard/VoiceoverUpload";
+import type { Plan, Voiceover } from "@/lib/ai/schema";
 import { planToVideo } from "@/lib/plan-to-video";
 import { examplesForStyle, findExample } from "@/lib/style-examples";
 import { tones, voices, type VideoStyle } from "@/lib/video-data";
@@ -16,17 +17,19 @@ const STORAGE_KEY = "naokolabs:studio-draft";
 const IDEA_MAX = 1000;
 const ideaExamples = ["3 alasan kopi lokal lebih segar", "Promo pembukaan cabang baru, diskon 20% minggu pertama", "Cara merawat sepatu kulit agar awet", "Ucapan Hari Santri dari brand kami"];
 
-type Draft = { idea: string; tone: string; styleId: string; exampleId: string; vo: boolean; voice: string; music: boolean };
+type VoMode = "ai" | "upload" | "none";
+type Draft = { idea: string; tone: string; styleId: string; exampleId: string; voMode: VoMode; voice: string; music: boolean };
 
-const initialDraft: Draft = { idea: "", tone: "promosi", styleId: "motion-graphic", exampleId: "", vo: true, voice: voices[0].id, music: true };
+const initialDraft: Draft = { idea: "", tone: "promosi", styleId: "motion-graphic", exampleId: "", voMode: "ai", voice: voices[0].id, music: true };
 
-function pickDraft(raw: Partial<Draft>): Draft {
+function pickDraft(raw: Partial<Draft> & { vo?: boolean }): Draft {
   const d = { ...initialDraft };
   if (typeof raw.idea === "string") d.idea = raw.idea.slice(0, IDEA_MAX);
   if (tones.some((t) => t.id === raw.tone)) d.tone = raw.tone!;
   if (typeof raw.styleId === "string") d.styleId = raw.styleId;
   if (typeof raw.exampleId === "string") d.exampleId = raw.exampleId;
-  if (typeof raw.vo === "boolean") d.vo = raw.vo;
+  if (raw.voMode === "ai" || raw.voMode === "upload" || raw.voMode === "none") d.voMode = raw.voMode;
+  else if (raw.vo === false) d.voMode = "none";
   if (voices.some((v) => v.id === raw.voice)) d.voice = raw.voice!;
   if (typeof raw.music === "boolean") d.music = raw.music;
   return d;
@@ -57,11 +60,14 @@ export function Studio({ styles, presetStyle, presetExample, presetIdea }: { sty
   const [assetError, setAssetError] = useState("");
   const [rightsError, setRightsError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [voiceover, setVoiceover] = useState<Voiceover | null>(null);
+  const [voRights, setVoRights] = useState(false);
+  const [voError, setVoError] = useState("");
   const loaded = useRef(false);
   const ideaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    let next = initialDraft;
+    let next = { ...initialDraft, exampleId: examplesForStyle(initialDraft.styleId)[0]?.id ?? "" };
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) next = pickDraft(JSON.parse(raw));
@@ -100,7 +106,18 @@ export function Studio({ styles, presetStyle, presetExample, presetIdea }: { sty
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (draft.idea.trim().length < 5) {
+    const useUpload = draft.voMode === "upload";
+    if (useUpload && !voiceover) {
+      setVoError("Unggah file voice-over dulu, atau pilih Suara AI.");
+      document.getElementById("suara")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    if (useUpload && !voRights) {
+      setVoError("Konfirmasi hak pemakaian rekaman suara dulu.");
+      document.getElementById("suara")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    if (!useUpload && draft.idea.trim().length < 5) {
       setError("Tulis ide video Anda, minimal satu kalimat pendek.");
       ideaRef.current?.focus();
       return;
@@ -135,8 +152,9 @@ export function Studio({ styles, presetStyle, presetExample, presetIdea }: { sty
           tone: draft.tone,
           styleId: draft.styleId,
           exampleId: example ? example.id : undefined,
-          vo: draft.vo,
+          vo: draft.voMode !== "none",
           voice: draft.voice,
+          voiceover: useUpload ? voiceover : undefined,
           music: draft.music,
           brand: { name: brand.name ?? "", handle: brand.handle ?? "", tagline: brand.tagline ?? "" },
           assets: valid.map((a) => ({ id: a.key, name: a.name, kind: a.kind })),
@@ -153,6 +171,7 @@ export function Studio({ styles, presetStyle, presetExample, presetIdea }: { sty
         exampleTitle: example?.title,
         brand: brand.name ?? "",
         idea: draft.idea.trim(),
+        voiceover: useUpload && voiceover ? { fileName: voiceover.fileName, seconds: voiceover.seconds } : undefined,
         assetNames: Object.fromEntries(valid.map((a) => [a.key, a.name])),
         plannerMode: data.mode,
         warnings: (data.issues ?? []).map((i: { scene?: number; message: string }) => (i.scene ? `Adegan ${i.scene}: ${i.message}` : i.message)),
@@ -168,7 +187,10 @@ export function Studio({ styles, presetStyle, presetExample, presetIdea }: { sty
 
   return (
     <form onSubmit={submit} noValidate className="stack">
-      <Step no={1} title="Tulis ide video Anda" desc="Satu atau dua kalimat cukup. Kami ubah menjadi brief konten dan storyboard; durasi video menyesuaikan isi ide.">
+      <Step no={1} title={draft.voMode === "upload" ? "Tulis ide video (opsional)" : "Tulis ide video Anda"}
+        desc={draft.voMode === "upload"
+          ? "Anda memakai voice-over sendiri: brief dan durasi mengikuti rekaman. Ide di sini hanya konteks tambahan, boleh dikosongkan."
+          : "Satu atau dua kalimat cukup. Kami ubah menjadi brief konten dan storyboard; durasi video menyesuaikan isi ide."}>
         <div className="field">
           <label className="sr-only" htmlFor="idea">Ide video</label>
           <textarea id="idea" ref={ideaRef} className="textarea idea-input" maxLength={IDEA_MAX}
@@ -241,19 +263,31 @@ export function Studio({ styles, presetStyle, presetExample, presetIdea }: { sty
       </Step>
 
       <Step no={3} title="Suara & musik">
-        <div className="stack-s">
-          <label className="switch">
-            <span><strong>Voice-over</strong><br /><span className="hint">Narasi dibacakan suara AI berbahasa Indonesia</span></span>
-            <input type="checkbox" checked={draft.vo} onChange={(e) => set("vo", e.target.checked)} />
-            <span className="switch-track" aria-hidden="true" />
-          </label>
-          {draft.vo && (
+        <div className="stack-s" id="suara">
+          <div className="options options-3" role="group" aria-label="Sumber narasi">
+            {([
+              { id: "ai", title: "Suara AI", text: "Naskah disusun dari ide, dibacakan suara AI" },
+              { id: "upload", title: "Voice-over saya", text: "Unggah rekaman narasi yang sudah jadi" },
+              { id: "none", title: "Tanpa narasi", text: "Pesan dibawa teks layar dan musik" },
+            ] as const).map((o) => (
+              <button key={o.id} type="button" className="option" aria-pressed={draft.voMode === o.id} onClick={() => { set("voMode", o.id); setVoError(""); }}>
+                <span className="option-title" style={{ fontSize: 15 }}>{o.title}</span>
+                <span className="option-text">{o.text}</span>
+              </button>
+            ))}
+          </div>
+          {draft.voMode === "ai" && (
             <div className="chips" role="group" aria-label="Pilih suara">
               {voices.map((v) => (
                 <button key={v.id} type="button" className="chip" aria-pressed={draft.voice === v.id} onClick={() => set("voice", v.id)}>{v.label}</button>
               ))}
             </div>
           )}
+          {draft.voMode === "upload" && (
+            <VoiceoverUpload value={voiceover} onChange={(v) => { setVoiceover(v); setVoError(""); if (!v) setVoRights(false); }}
+              rights={voRights} onRightsChange={(v) => { setVoRights(v); setVoError(""); }} rightsError={voiceover ? voError || undefined : undefined} />
+          )}
+          {draft.voMode === "upload" && !voiceover && voError && <p className="field-error" role="alert">{voError}</p>}
           <label className="switch">
             <span><strong><Music size={16} aria-hidden="true" style={{ verticalAlign: -2 }} /> Musik latar</strong><br /><span className="hint">Musik berlisensi dari pustaka NaokoLabs</span></span>
             <input type="checkbox" checked={draft.music} onChange={(e) => set("music", e.target.checked)} />

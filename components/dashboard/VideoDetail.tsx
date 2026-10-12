@@ -75,6 +75,7 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
               caption={state.caption}
               version={state.planVersion}
               editable={status === "rencana"}
+              voiceoverName={local?.voiceover?.fileName}
               onDirtyChange={setDirty}
               onSave={(scenes, caption) => {
                 update({ scenes, caption, planVersion: state.planVersion + 1 });
@@ -211,6 +212,7 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
             <p className="card-text">Brand: {video.brand}</p>
             <p className="card-text">Gaya: {style?.name}{local?.exampleTitle ? ` · seperti contoh “${local.exampleTitle}”` : ""}</p>
             <p className="card-text">Durasi: ± {duration} detik · 9:16</p>
+            {local?.voiceover && <p className="card-text">Voice-over: {local.voiceover.fileName}</p>}
             <p className="card-text">Rencana: versi {state.planVersion}</p>
             <p className="card-text">Dibuat: {new Date(video.createdAt).toLocaleDateString("id-ID", { dateStyle: "long" })}</p>
             {!local && (

@@ -18,6 +18,7 @@ export function PlanEditor({
   caption,
   version,
   editable,
+  voiceoverName,
   onSave,
   onDirtyChange,
 }: {
@@ -25,6 +26,8 @@ export function PlanEditor({
   caption: string;
   version: number;
   editable: boolean;
+  /** Bila diisi, narasi dan durasi terkunci mengikuti voice-over pelanggan. */
+  voiceoverName?: string;
   onSave: (scenes: Scene[], caption: string) => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
@@ -48,7 +51,8 @@ export function PlanEditor({
   const total = draft.reduce((sum, s) => sum + s.seconds, 0);
   const spoken = draft.reduce((sum, s) => sum + readingSeconds(s.narration), 0);
   const tooLong = total > MAX_VIDEO_SECONDS;
-  const narrationOver = spoken > total + 2;
+  const locked = !!voiceoverName;
+  const narrationOver = !locked && spoken > total + 2;
 
   const patch = (id: string, value: Partial<Scene>) => setDraft((list) => list.map((s) => (s.id === id ? { ...s, ...value } : s)));
   const move = (index: number, dir: -1 | 1) =>
@@ -80,6 +84,12 @@ export function PlanEditor({
           </button>
         ))}
       </div>
+
+      {locked && (
+        <p className="notice" role="status" style={{ marginBottom: 14 }}>
+          Narasi, urutan dan durasi adegan mengikuti voice-over Anda ({voiceoverName}). Yang bisa diubah: teks di layar, visual, dan caption.
+        </p>
+      )}
 
       {(tooLong || narrationOver) && (
         <p className="notice notice-warning row" role="status" style={{ marginBottom: 14 }}>
@@ -116,26 +126,30 @@ export function PlanEditor({
                       <textarea id={`st-${scene.id}`} className="textarea" rows={2} style={{ minHeight: 64 }} value={scene.screenText} onChange={(e) => patch(scene.id, { screenText: e.target.value })} aria-describedby={`st-hint-${scene.id}`} />
                       <p id={`st-hint-${scene.id}`} className="hint">Maksimal 2 baris, tiap baris ± 8 kata.</p>
                     </div>
+                    {locked ? (
+                      <div><p className="detail-label">Narasi (dari voice-over Anda)</p><p className="detail-text">{scene.narration}</p></div>
+                    ) : (
                     <div className="field">
                       <label className="label" htmlFor={`nr-${scene.id}`}>Narasi (dibacakan)</label>
                       <textarea id={`nr-${scene.id}`} className="textarea" style={{ minHeight: 96 }} value={scene.narration} onChange={(e) => patch(scene.id, { narration: e.target.value })} aria-describedby={`nr-hint-${scene.id}`} />
                       <p id={`nr-hint-${scene.id}`} className="hint">{words} kata · ± {readingSeconds(scene.narration)} detik dibaca</p>
                     </div>
+                    )}
                     <div className="field">
                       <label className="label" htmlFor={`vs-${scene.id}`}>Visual</label>
                       <input id={`vs-${scene.id}`} className="input" value={scene.visual} onChange={(e) => patch(scene.id, { visual: e.target.value })} />
                     </div>
                     <div className="field">
                       <label className="label" htmlFor={`dr-${scene.id}`}>Durasi adegan</label>
-                      <select id={`dr-${scene.id}`} className="select" value={scene.seconds} onChange={(e) => patch(scene.id, { seconds: Number(e.target.value) })}>
-                        {Array.from({ length: 14 }, (_, n) => n + 2).map((n) => <option key={n} value={n}>{n} detik</option>)}
+                      <select id={`dr-${scene.id}`} className="select" value={scene.seconds} disabled={locked} onChange={(e) => patch(scene.id, { seconds: Number(e.target.value) })}>
+                        {Array.from({ length: Math.max(14, scene.seconds - 1) }, (_, n) => n + 2).map((n) => <option key={n} value={n}>{n} detik</option>)}
                       </select>
                     </div>
                     <div className="row" style={{ justifyContent: "space-between" }}>
                       <div className="row" style={{ gap: 6 }}>
-                        <button type="button" className="icon-btn" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Pindah ke atas"><ArrowUp size={16} aria-hidden="true" /></button>
-                        <button type="button" className="icon-btn" disabled={i === draft.length - 1} onClick={() => move(i, 1)} aria-label="Pindah ke bawah"><ArrowDown size={16} aria-hidden="true" /></button>
-                        <button type="button" className="icon-btn icon-btn-danger" disabled={draft.length <= MIN_SCENES}
+                        <button type="button" className="icon-btn" disabled={locked || i === 0} onClick={() => move(i, -1)} aria-label="Pindah ke atas"><ArrowUp size={16} aria-hidden="true" /></button>
+                        <button type="button" className="icon-btn" disabled={locked || i === draft.length - 1} onClick={() => move(i, 1)} aria-label="Pindah ke bawah"><ArrowDown size={16} aria-hidden="true" /></button>
+                        <button type="button" className="icon-btn icon-btn-danger" disabled={locked || draft.length <= MIN_SCENES}
                           onClick={() => { setDraft((list) => list.filter((s) => s.id !== scene.id)); setEditing(null); }} aria-label={`Hapus adegan ${i + 1}`}>
                           <Trash2 size={16} aria-hidden="true" />
                         </button>
@@ -180,7 +194,7 @@ export function PlanEditor({
 
       {editable && (
         <div className="stack-s" style={{ marginTop: 16 }}>
-          {tab === "storyboard" && draft.length < MAX_SCENES && (
+          {tab === "storyboard" && !locked && draft.length < MAX_SCENES && (
             <button type="button" className="btn btn-block btn-center" onClick={() => { const s = newScene(); setDraft((list) => [...list, s]); setEditing(s.id); }}>
               <Plus size={18} aria-hidden="true" /> Tambah adegan
             </button>

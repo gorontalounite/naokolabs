@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { buildPlannerPrompt } from "./prompts/build";
 import { PROMPT_VERSION } from "./prompts/global";
-import { PlanSchema, type Plan, type PlanRequest } from "./schema";
+import { PlanSchema, type Plan, type PlanRequest, type Voiceover } from "./schema";
 import { hasErrors, validatePlan, type Issue } from "./validate";
 
 export const PLANNER_MODEL = "claude-opus-5-5";
@@ -122,6 +122,7 @@ const GOAL: Record<string, string> = {
 };
 
 export function samplePlan(req: PlanRequest): Plan {
+  if (req.voiceover) return sampleFromVoiceover(req, req.voiceover);
   const idea = readIdea(req.idea);
   const brand = req.brand?.name?.trim();
   const handle = req.brand?.handle?.trim();
@@ -197,5 +198,77 @@ export function samplePlan(req: PlanRequest): Plan {
     hashtags: ["NaokoLabs", "TipsBisnis", "UMKM"],
     missingInputs: ["Ini contoh brief dan storyboard dari template: isi tiap poin disusun AI setelah kunci API dipasang."],
     sourcesUsed: [req.idea],
+  };
+}
+
+// Mode contoh dengan voice-over pelanggan: narasi = transkrip persis, adegan mengikuti waktu kalimat.
+export function groupSegments(vo: Voiceover) {
+  const total = Math.max(MIN_SCENE_SECONDS * 2, Math.round(vo.seconds));
+  const chunks: { text: string; start: number; end: number }[] = [];
+  for (const sg of vo.segments) {
+    const last = chunks[chunks.length - 1];
+    // Satukan kalimat pendek sampai satu adegan sekitar 3,5 detik atau lebih.
+    if (last && last.end - last.start < 3.5) {
+      last.text = `${last.text} ${sg.text}`;
+      last.end = sg.end;
+    } else chunks.push({ ...sg });
+  }
+  // Batas adegan dalam detik bulat; adegan terakhir berakhir di durasi rekaman.
+  const bounds = chunks.map((c, i) => (i === chunks.length - 1 ? total : Math.round(c.end)));
+  const scenes: { text: string; seconds: number }[] = [];
+  let prev = 0;
+  chunks.forEach((c, i) => {
+    const seconds = bounds[i] - prev;
+    if (seconds < MIN_SCENE_SECONDS && scenes.length) {
+      scenes[scenes.length - 1].text += ` ${c.text}`;
+      scenes[scenes.length - 1].seconds += seconds;
+    } else scenes.push({ text: c.text, seconds });
+    prev = bounds[i];
+  });
+  if (scenes.length > 1 && scenes[0].seconds < MIN_SCENE_SECONDS) {
+    scenes[1].text = `${scenes[0].text} ${scenes[1].text}`;
+    scenes[1].seconds += scenes[0].seconds;
+    scenes.shift();
+  }
+  return { total, scenes };
+}
+
+const MIN_SCENE_SECONDS = 2;
+
+function sampleFromVoiceover(req: PlanRequest, vo: Voiceover): Plan {
+  const { total, scenes } = groupSegments(vo);
+  const brand = req.brand?.name?.trim();
+  const handle = req.brand?.handle?.trim();
+  const headline = clip(req.idea || vo.segments[0].text, 8) || "Voice-over Anda";
+  const image = req.assets.find((a) => a.kind === "gambar");
+  return {
+    status: "ok",
+    title: brand ? `${brand}: ${headline}` : cap(headline),
+    brief: {
+      goal: GOAL[req.tone] ?? GOAL.promosi,
+      audience: `Pengikut ${handle || "akun brand"} dan calon pelanggan`,
+      keyMessage: cap(clip(vo.segments[0].text, 14)),
+      angle: "Mengikuti alur voice-over pelanggan, visual menegaskan kata yang sedang diucapkan",
+      points: scenes.map((sc) => clip(sc.text, 8)),
+      cta: req.brand?.tagline?.trim() || clip(vo.segments[vo.segments.length - 1].text, 12),
+    },
+    duration: total,
+    durationReason: `Mengikuti panjang voice-over Anda (${total} detik).`,
+    concept: `Video ${total} detik yang mengikuti voice-over pelanggan.`,
+    hook: clip(vo.segments[0].text, 12),
+    scenes: scenes.map((sc, i) => ({
+      purpose: i === 0 ? "Penonton berhenti menggulir dan menangkap topik" : i === scenes.length - 1 ? "Penonton tahu langkah berikutnya" : "Penonton menangkap kalimat yang sedang diucapkan",
+      seconds: sc.seconds,
+      screenText: clip(sc.text, 6),
+      narration: sc.text,
+      visual: i === 1 && image ? `Foto dari aset klien: ${image.name}` : "Kata kunci dari kalimat ini tampil besar di tengah",
+      motion: { enter: "Teks masuk mengikuti kata pertama yang diucapkan", action: "Kata kunci membesar saat diucapkan", exit: i === scenes.length - 1 ? "Tahan sampai akhir" : "Memudar ke adegan berikutnya" },
+      sound: "",
+      assetId: i === 1 && image ? image.id : null,
+    })),
+    caption: `${cap(headline)}. ${req.brand?.tagline?.trim() ?? ""}`.trim(),
+    hashtags: ["NaokoLabs", "UMKM"],
+    missingInputs: ["Ini contoh storyboard dari template: visual dan teks layar disusun AI setelah kunci API Anthropic aktif."],
+    sourcesUsed: [vo.fileName],
   };
 }

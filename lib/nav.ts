@@ -1,7 +1,6 @@
 // Menu dashboard video (docs/DECISIONS.md D-15, D-19: Jadwal & Auto-Post di luar MVP).
 export const navItems = [
   { href: "/app", label: "Studio Video", icon: "studio" },
-  { href: "/app/ide", label: "Ide Konten", icon: "ide" },
   { href: "/app/gaya", label: "Katalog Gaya", icon: "gaya" },
   { href: "/app/riwayat", label: "Riwayat Video", icon: "riwayat" },
   { href: "/app/panduan", label: "Panduan", icon: "panduan" },

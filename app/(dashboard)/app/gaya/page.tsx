@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 export default async function StylesPage({ searchParams }: { searchParams: Promise<{ gaya?: string }> }) {
   const [{ gaya }, viewer] = await Promise.all([searchParams, getViewer()]);
 
-  if (viewer?.mode !== "signed-in") {
+  // Mode pratinjau (AUTH_REQUIRED=false, hanya pengembangan) ikut dibuka agar katalog bisa diuji sebelum login aktif.
+  if (viewer?.mode !== "signed-in" && viewer?.mode !== "preview") {
     return (
       <>
         <PageHeader icon={Palette} title="Katalog Gaya" />

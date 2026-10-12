@@ -23,6 +23,7 @@ type MusicMode = "none" | "upload" | "library";
 type Draft = { idea: string; tone: string; styleId: string; voMode: VoMode; voice: string; musicMode: MusicMode };
 
 export type StudioReference = { id: string; title: string; file: string; style: string };
+export type StudioSample = StudioReference & { thumbnail: string };
 
 const initialDraft: Draft = { idea: "", tone: "promosi", styleId: "motion-graphic", voMode: "none", voice: voices[0].id, musicMode: "none" };
 
@@ -53,6 +54,20 @@ function Step({ no, title, desc, children, id }: { no: number; title: string; de
   );
 }
 
+function SampleThumb({ sample, pressed, onClick }: { sample: StudioSample; pressed: boolean; onClick: () => void }) {
+  const [broken, setBroken] = useState(false);
+  return (
+    <button type="button" className="sample" aria-pressed={pressed} onClick={onClick} title={sample.file}>
+      {broken ? <StylePreview styleId={sample.style} /> : (
+        // eslint-disable-next-line @next/next/no-img-element -- thumbnail dari Google Drive
+        <img src={sample.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} />
+      )}
+      <span className="sample-name">{sample.title}</span>
+      {pressed && <span className="style-option-check" style={{ display: "grid" }} aria-hidden="true"><Check size={14} /></span>}
+    </button>
+  );
+}
+
 function Choice<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { id: T; title: string; text: string }[]; onChange: (v: T) => void }) {
   return (
     <fieldset className="fieldset stack-s">
@@ -69,7 +84,10 @@ function Choice<T extends string>({ label, value, options, onChange }: { label: 
   );
 }
 
-export function Studio({ styles, presetStyle, presetIdea, reference }: { styles: VideoStyle[]; presetStyle?: string; presetIdea?: string; reference?: StudioReference | null }) {
+export function Studio({ styles, presetStyle, presetIdea, reference, samples = {}, sampleTotals = {} }: {
+  styles: VideoStyle[]; presetStyle?: string; presetIdea?: string; reference?: StudioReference | null;
+  samples?: Record<string, StudioSample[]>; sampleTotals?: Record<string, number>;
+}) {
   const router = useRouter();
   const musicInputId = useId();
   const [draft, setDraft] = useState<Draft>(initialDraft);
@@ -244,13 +262,26 @@ export function Studio({ styles, presetStyle, presetIdea, reference }: { styles:
             </button>
           ))}
         </div>
+        {(samples[draft.styleId]?.length ?? 0) > 0 && (
+          <div className="stack-s">
+            <span className="eyebrow">Pilih contoh sebagai acuan (opsional)</span>
+            <div className="sample-strip" role="group" aria-label="Contoh video">
+              {samples[draft.styleId].map((smp) => (
+                <SampleThumb key={smp.id} sample={smp} pressed={ref?.id === smp.id} onClick={() => setRef(ref?.id === smp.id ? null : smp)} />
+              ))}
+              <Link href={`/app/gaya?gaya=${draft.styleId}`} className="sample-more">
+                <span>Lihat semua</span>
+                <small>{sampleTotals[draft.styleId] ?? 0} contoh</small>
+              </Link>
+            </div>
+          </div>
+        )}
         {ref && (
           <div className="ref-chip" role="status">
             <span>Acuan: <strong>{ref.title}</strong> <span className="hint">({ref.file})</span>{ref.style !== draft.styleId && <span className="hint"> · tidak dipakai karena gayanya berbeda</span>}</span>
             <button type="button" className="icon-btn" aria-label="Hapus acuan" onClick={() => setRef(null)}><X size={16} aria-hidden="true" /></button>
           </div>
         )}
-        <Link href="/app/gaya" className="text-link">Lihat contoh di Katalog Gaya →</Link>
       </Step>
 
       <Step no={3} id="footage" title="Footage (opsional)" desc="Foto atau video Anda. Tanpa footage, video dibuat dari tipografi, bentuk dan ikon.">

@@ -1,6 +1,6 @@
 import { Studio } from "@/components/dashboard/Studio";
 import { getVideoStyles } from "@/lib/catalog";
-import { findReference } from "@/lib/references";
+import { findReference, referenceThumbnail, references } from "@/lib/references";
 import { getViewer } from "@/lib/workspace";
 
 export const metadata = { title: "Studio Video" };
@@ -9,6 +9,11 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const [viewer, styles] = await Promise.all([getViewer(), getVideoStyles()]);
   const ref = findReference(params.contoh);
+  // Beberapa contoh per gaya untuk dipilih langsung di Studio; sisanya di Katalog Gaya.
+  const samples = Object.fromEntries(
+    styles.map((st) => [st.id, references.filter((r) => r.style === st.id).slice(0, 6).map((r) => ({ id: r.id, title: r.title, file: r.file, style: r.style, thumbnail: referenceThumbnail(r.id, 320) }))]),
+  );
+  const total = Object.fromEntries(styles.map((st) => [st.id, references.filter((r) => r.style === st.id).length]));
   const name = viewer?.mode === "signed-in" ? (viewer.fullName ?? viewer.email.split("@")[0]) : null;
 
   return (
@@ -30,7 +35,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
       </section>
 
       <div className="section">
-        <Studio styles={styles} presetStyle={params.gaya} reference={ref ? { id: ref.id, title: ref.title, file: ref.file, style: ref.style } : null} presetIdea={params.ide} />
+        <Studio styles={styles} presetStyle={params.gaya} reference={ref ? { id: ref.id, title: ref.title, file: ref.file, style: ref.style } : null} samples={samples} sampleTotals={total} presetIdea={params.ide} />
       </div>
 
     </>

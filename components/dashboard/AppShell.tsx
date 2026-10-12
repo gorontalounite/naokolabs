@@ -4,7 +4,6 @@ import {
   BookOpen,
   Clapperboard,
   History,
-  Lightbulb,
   Palette,
   Settings,
   Sparkles,
@@ -18,7 +17,6 @@ import { currentLabel, isActive, navItems, type NavIcon } from "@/lib/nav";
 
 const icons: Record<NavIcon, LucideIcon> = {
   studio: Clapperboard,
-  ide: Lightbulb,
   gaya: Palette,
   riwayat: History,
   panduan: BookOpen,

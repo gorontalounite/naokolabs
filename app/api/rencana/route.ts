@@ -4,7 +4,8 @@ import { PlanRequestSchema } from "@/lib/ai/schema";
 
 // Orkestrasi tahap rencana: validasi input → planner (brief, durasi, storyboard) → validasi rencana.
 // Belum menyimpan ke database (BUILD-PLAN urutan F); klien menyimpan hasilnya di browser.
-export const maxDuration = 60;
+// Claude dengan structured output + satu kali perbaikan bisa lebih dari 60 detik.
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   let body: unknown;

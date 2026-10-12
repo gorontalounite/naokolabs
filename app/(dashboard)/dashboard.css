@@ -356,3 +356,6 @@ h1, h2, h3, p { margin: 0; }
 
 .card-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
 @media (min-width: 720px) { .keyframe { font-size: 12px; padding: 10px; } }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }

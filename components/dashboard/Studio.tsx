@@ -1,11 +1,14 @@
 "use client";
 
-import { FileText, Link2, Lightbulb, Mic, Music, Palette, Sparkles, Subtitles, Wand2 } from "lucide-react";
+import { FileText, Link2, Lightbulb, LoaderCircle, Mic, Music, Palette, Sparkles, Subtitles, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AssetPicker, type PickedAsset } from "@/components/dashboard/AssetPicker";
-import { durations, findStyle, inputModes, tones, videoStyles, voices, type InputMode } from "@/lib/video-data";
+import type { Plan } from "@/lib/ai/schema";
+import { planToVideo } from "@/lib/plan-to-video";
+import { durations, inputModes, tones, voices, type InputMode, type VideoStyle } from "@/lib/video-data";
+import { saveLocalVideo } from "@/lib/video-store";
 
 const modeIcons = { link: Link2, naskah: FileText, ide: Lightbulb } as const;
 const STORAGE_KEY = "naokolabs:studio-draft";
@@ -38,7 +41,8 @@ const initialDraft: Draft = {
   subtitles: true,
 };
 
-export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; presetIdea?: string }) {
+export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle[]; presetStyle?: string; presetIdea?: string }) {
+  const findStyle = (id: string) => styles.find((st) => st.id === id);
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initialDraft);
   const [error, setError] = useState("");
@@ -46,6 +50,9 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
   const [rights, setRights] = useState(false);
   const [assetError, setAssetError] = useState("");
   const [rightsError, setRightsError] = useState("");
+  const [pastedText, setPastedText] = useState("");
+  const [needsPaste, setNeedsPaste] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -61,6 +68,7 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
     // eslint-disable-next-line react-hooks/set-state-in-effect -- memulihkan draf setelah hidrasi
     setDraft(next);
     loaded.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hanya saat preset berubah
   }, [presetStyle, presetIdea]);
 
   useEffect(() => {
@@ -77,10 +85,10 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
     setError("");
   };
 
-  const style = findStyle(draft.styleId) ?? videoStyles[0];
-  const quickStyles = videoStyles.filter((s) => s.tier === "standar").slice(0, 5);
+  const style = findStyle(draft.styleId) ?? styles[0];
+  const quickStyles = styles.filter((s) => s.tier === "standar").slice(0, 5);
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (draft.mode === "link" && !/^https?:\/\/\S+\.\S+/.test(draft.link.trim())) return setError("Tempel link lengkap, diawali https://");
     if (draft.mode === "naskah" && draft.script.trim().length < 20) return setError("Tulis naskah atau poin minimal 20 karakter.");
@@ -96,7 +104,61 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
       document.getElementById("aset-anda")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    router.push("/app/video/promo-ruang-sela?dari=studio");
+    if (needsPaste && pastedText.trim().length < 40) return setError("Tempel isi halaman minimal beberapa kalimat.");
+
+    let brand: { name?: string; handle?: string; tagline?: string } = {};
+    try {
+      brand = JSON.parse(localStorage.getItem("naokolabs:brand-kit") ?? "{}");
+    } catch {
+      // Brand kit opsional.
+    }
+
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/rencana", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          mode: draft.mode,
+          link: draft.link.trim(),
+          script: draft.script,
+          idea: draft.idea,
+          pastedText: needsPaste ? pastedText : "",
+          duration: draft.duration,
+          tone: draft.tone,
+          styleId: draft.styleId,
+          vo: draft.vo,
+          voice: draft.voice,
+          music: draft.music,
+          subtitles: draft.subtitles,
+          brand: { name: brand.name ?? "", handle: brand.handle ?? "", tagline: brand.tagline ?? "" },
+          assets: valid.map((a) => ({ id: a.key, name: a.name, kind: a.kind })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Rencana gagal disusun. Coba lagi.");
+        if (data.needsPaste) setNeedsPaste(true);
+        return;
+      }
+      const video = planToVideo(data.plan as Plan, {
+        duration: draft.duration,
+        tone: draft.tone,
+        styleId: draft.styleId,
+        brand: brand.name ?? "",
+        assetNames: Object.fromEntries(valid.map((a) => [a.key, a.name])),
+        plannerMode: data.mode,
+        warnings: (data.issues ?? []).map((i: { scene?: number; message: string }) => (i.scene ? `Adegan ${i.scene}: ${i.message}` : i.message)),
+        sourceTitle: data.source?.title,
+      });
+      saveLocalVideo(video);
+      router.push(`/app/video/${video.id}`);
+    } catch {
+      setError("Koneksi terputus. Periksa internet lalu coba lagi.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -120,9 +182,16 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
               <div className="input-icon">
                 <Link2 size={18} aria-hidden="true" />
                 <input id="link" className="input" type="url" inputMode="url" placeholder="https://tokopedia.com/…, https://instagram.com/…, link berita"
-                  value={draft.link} onChange={(e) => set("link", e.target.value)} aria-invalid={!!error} aria-describedby="input-help" />
+                  value={draft.link} onChange={(e) => { set("link", e.target.value); setNeedsPaste(false); }} aria-invalid={!!error} aria-describedby="input-help" />
               </div>
               <p id="input-help" className="hint">AI membaca isi halaman lalu menyusun naskah. Mendukung marketplace, Instagram, TikTok, YouTube dan portal berita.</p>
+              {needsPaste && (
+                <div className="field" style={{ marginTop: 8 }}>
+                  <label className="label" htmlFor="pasted">Tempel isi halaman</label>
+                  <textarea id="pasted" className="textarea" placeholder="Salin nama produk, harga, keunggulan, atau isi artikel dari halaman tersebut"
+                    value={pastedText} onChange={(e) => { setPastedText(e.target.value); setError(""); }} />
+                </div>
+              )}
             </>
           )}
           {draft.mode === "naskah" && (
@@ -193,7 +262,7 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
       <section className="panel" aria-labelledby="gaya-title">
         <div className="section-head">
           <h2 id="gaya-title" className="section-title"><Palette size={20} aria-hidden="true" /> Gaya video</h2>
-          <Link href="/app/gaya" className="text-link">Lihat semua {videoStyles.length} gaya →</Link>
+          <Link href="/app/gaya" className="text-link">Lihat semua {styles.length} gaya →</Link>
         </div>
         <div className="style-picked">
           <span className="style-thumb" aria-hidden="true"><Sparkles size={22} /></span>
@@ -239,9 +308,10 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
         </div>
       </section>
 
-      <button type="submit" className="btn btn-primary btn-xl">
-        <Wand2 size={20} aria-hidden="true" /> Buat Rencana Video
+      <button type="submit" className="btn btn-primary btn-xl" disabled={submitting} aria-busy={submitting}>
+        {submitting ? <><LoaderCircle size={20} aria-hidden="true" className="spin" /> Menyusun rencana…</> : <><Wand2 size={20} aria-hidden="true" /> Buat Rencana Video</>}
       </button>
+      {error && <p className="field-error" role="alert" style={{ textAlign: "center" }}>{error}</p>}
       <p className="hint" style={{ textAlign: "center" }}>
         Rencana (naskah, storyboard, caption) gratis dan bisa diedit. Kuota baru terpakai saat Anda klik &ldquo;Produksi Video&rdquo;.
       </p>

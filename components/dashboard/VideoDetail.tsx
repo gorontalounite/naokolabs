@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { PlanEditor } from "@/components/dashboard/PlanEditor";
 import { RevisionForm } from "@/components/dashboard/RevisionForm";
-import { useVideoState } from "@/lib/video-store";
+import { useVideoState, type LocalVideoMeta } from "@/lib/video-store";
 import { findStyle, revisionKinds, statusInfo, tones, videoSteps, type SampleVideo } from "@/lib/video-data";
 
-export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStudio: boolean }) {
+export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) {
+  const local = "local" in video ? video : null;
   const { state, update, reset } = useVideoState(video);
   const [dirty, setDirty] = useState(false);
   const [note, setNote] = useState("");
@@ -32,10 +33,19 @@ export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStu
 
   return (
     <div className="stack">
-      {fromStudio && (
+      {local?.plannerMode === "contoh" && (
         <p className="notice notice-warning" role="status">
-          Penyusunan rencana otomatis dari bahan Anda belum tersambung ke AI. Yang tampil di bawah adalah <strong>contoh rencana</strong> supaya alurnya bisa dicoba.
+          Ini <strong>contoh rencana</strong> dari template karena penyusunan oleh AI belum diaktifkan. Alurnya (ubah, setujui, minta perbaikan) sudah bisa dicoba.
         </p>
+      )}
+      {local && (local.warnings.length > 0 || local.missingInputs.length > 0) && (
+        <details className="notice">
+          <summary>Catatan rencana ({local.warnings.length + local.missingInputs.length})</summary>
+          <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+            {local.missingInputs.map((m) => <li key={m}>{m}</li>)}
+            {local.warnings.map((w) => <li key={w}>{w}</li>)}
+          </ul>
+        </details>
       )}
 
       <div className="page-header">
@@ -43,6 +53,7 @@ export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStu
           <p className="eyebrow">{style?.name} · {video.duration} detik · {tone?.label}</p>
           <h1 className="page-title" style={{ marginTop: 6 }}>{video.title}</h1>
           <p className="page-subtitle">{info.label}</p>
+          {local?.concept && <p className="hint" style={{ marginTop: 6 }}>{local.concept}{local.sourceTitle ? ` Sumber: ${local.sourceTitle}.` : ""}</p>}
         </div>
       </div>
 

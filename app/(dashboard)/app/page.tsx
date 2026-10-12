@@ -1,6 +1,7 @@
 import { CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { Studio } from "@/components/dashboard/Studio";
+import { getVideoStyles } from "@/lib/catalog";
 import { formatShortDate, upcomingMoments } from "@/lib/moments";
 import { todayWita } from "@/lib/today";
 import { getViewer } from "@/lib/workspace";
@@ -9,7 +10,7 @@ export const metadata = { title: "Studio Video" };
 
 export default async function StudioPage({ searchParams }: { searchParams: Promise<{ gaya?: string; ide?: string }> }) {
   const params = await searchParams;
-  const viewer = await getViewer();
+  const [viewer, styles] = await Promise.all([getViewer(), getVideoStyles()]);
   const name = viewer?.mode === "signed-in" ? (viewer.fullName ?? viewer.email.split("@")[0]) : null;
   const moments = upcomingMoments(todayWita(), 4);
 
@@ -32,7 +33,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
       </section>
 
       <div className="section">
-        <Studio presetStyle={params.gaya} presetIdea={params.ide} />
+        <Studio styles={styles} presetStyle={params.gaya} presetIdea={params.ide} />
       </div>
 
       <section className="section" aria-labelledby="momen-title">

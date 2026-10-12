@@ -139,6 +139,9 @@ export type Scene = {
   narration: string;
   visual: string;
   asset: { label: string; placeholder: boolean };
+  purpose?: string;
+  motion?: string;
+  sound?: string;
 };
 
 export type SampleVideo = {

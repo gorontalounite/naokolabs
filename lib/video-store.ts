@@ -51,3 +51,48 @@ export function useVideoState(video: SampleVideo) {
 
   return { state, update, reset, ready };
 }
+
+// ---------------------------------------------------------------------------
+// Video yang dibuat dari Studio (belum ada database): metadata + daftar disimpan di browser.
+
+export type LocalVideoMeta = SampleVideo & {
+  local: true;
+  plannerMode: "contoh" | "ai";
+  concept: string;
+  hook: string;
+  hashtags: string[];
+  missingInputs: string[];
+  warnings: string[];
+  sourceTitle?: string;
+};
+
+const META_PREFIX = "naokolabs:video-meta:";
+const INDEX_KEY = "naokolabs:videos";
+
+export function saveLocalVideo(meta: LocalVideoMeta) {
+  localStorage.setItem(META_PREFIX + meta.id, JSON.stringify(meta));
+  const ids: string[] = JSON.parse(localStorage.getItem(INDEX_KEY) ?? "[]");
+  localStorage.setItem(INDEX_KEY, JSON.stringify([meta.id, ...ids.filter((x) => x !== meta.id)].slice(0, 100)));
+}
+
+export function loadLocalVideo(id: string): LocalVideoMeta | null {
+  try {
+    const raw = localStorage.getItem(META_PREFIX + id);
+    return raw ? (JSON.parse(raw) as LocalVideoMeta) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function listLocalVideos(): LocalVideoMeta[] {
+  try {
+    const ids: string[] = JSON.parse(localStorage.getItem(INDEX_KEY) ?? "[]");
+    return ids.map(loadLocalVideo).filter((v): v is LocalVideoMeta => !!v).map((v) => {
+      // Status terkini ada di state video (bisa sudah disetujui/diproduksi).
+      const state = localStorage.getItem(key(v.id));
+      return state ? { ...v, status: (JSON.parse(state) as VideoState).status } : v;
+    });
+  } catch {
+    return [];
+  }
+}

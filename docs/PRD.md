@@ -39,7 +39,7 @@ Script ditampilkan sebelum persetujuan agar klien menyetujui kata yang benar-ben
 
 ## FR-05 Produksi
 
-Jalankan cabang video dengan VO bila dipilih. Cabang carousel (render slide) adalah tahap berikutnya. OpenAI menyusun rencana/naskah; ElevenLabs mengubah naskah final menjadi suara; Anthropic membantu komposisi Remotion/slide; renderer menghasilkan file. HeyGen/Kling/Seedance/Canva hanya dipakai bila kebutuhan konten memerlukannya dan akses/biaya sudah jelas.
+Jalankan cabang video dengan VO bila dipilih. Cabang carousel (render slide) adalah tahap berikutnya. Anthropic (Claude) menyusun rencana/naskah dan membantu komposisi Remotion/slide (D-17); ElevenLabs mengubah naskah final menjadi suara; renderer menghasilkan file. HeyGen/Kling/Seedance/Canva hanya dipakai bila kebutuhan konten memerlukannya dan akses/biaya sudah jelas.
 
 Status mencakup antrean, sedang diproses, menunggu klien, gagal, dan selesai. Progress mengacu kejadian nyata; estimasi yang belum terkalibrasi diberi label estimasi. Menutup browser tidak membatalkan pekerjaan. Satu item gagal tidak otomatis menggagalkan item lain.
 

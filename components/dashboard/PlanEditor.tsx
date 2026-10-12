@@ -112,7 +112,8 @@ export function PlanEditor({
                   <div className="stack-s">
                     <div className="field">
                       <label className="label" htmlFor={`st-${scene.id}`}>Teks di layar</label>
-                      <input id={`st-${scene.id}`} className="input" value={scene.screenText} onChange={(e) => patch(scene.id, { screenText: e.target.value })} />
+                      <textarea id={`st-${scene.id}`} className="textarea" rows={2} style={{ minHeight: 64 }} value={scene.screenText} onChange={(e) => patch(scene.id, { screenText: e.target.value })} aria-describedby={`st-hint-${scene.id}`} />
+                      <p id={`st-hint-${scene.id}`} className="hint">Maksimal 2 baris, tiap baris ± 8 kata.</p>
                     </div>
                     <div className="field">
                       <label className="label" htmlFor={`nr-${scene.id}`}>Narasi (dibacakan)</label>
@@ -145,9 +146,11 @@ export function PlanEditor({
                   <div className="scene-body">
                     <div className="keyframe">{scene.asset.placeholder ? "PLACEHOLDER" : "RENCANA"}<br />{scene.asset.label}</div>
                     <div className="stack-s">
-                      <div><p className="detail-label">Teks di layar</p><p className="detail-text">{scene.screenText || <span className="hint">Belum diisi</span>}</p></div>
+                      <div><p className="detail-label">Teks di layar</p><p className="detail-text" style={{ whiteSpace: "pre-line" }}>{scene.screenText || <span className="hint">Belum diisi</span>}</p></div>
                       <div><p className="detail-label">Narasi</p><p className="detail-text">{scene.narration || <span className="hint">Belum diisi</span>}</p></div>
                       <div><p className="detail-label">Visual</p><p className="detail-text">{scene.visual || <span className="hint">Belum diisi</span>}</p></div>
+                      {scene.motion && <div><p className="detail-label">Gerakan</p><p className="detail-text">{scene.motion}</p></div>}
+                      {scene.purpose && <p className="hint">Tujuan adegan: {scene.purpose}</p>}
                     </div>
                   </div>
                 )}

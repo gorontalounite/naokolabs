@@ -6,7 +6,7 @@ Status: DRAF; sumber publik dibuka 11 Oktober 2026. Belum menguji kredensial, sa
 
 | Integrasi | Fungsi | Tahap/usulan | Catatan |
 |---|---|---|---|
-| OpenAI | Strategi, script, storyboard, caption | Inti | GPT Astra di katalog API adalah GPT-6 Astra, ID gpt-6-astra |
+| Anthropic | Strategi, script, storyboard, caption, komposisi (D-17; OpenAI tidak dipakai) | Inti | Model planner: claude-opus-5-5 dengan structured output |
 | Anthropic | Komposisi/kode Remotion, bantuan produksi | Inti | Claude Opus 5.5, ID claude-opus-5-5; tetap memerlukan harness dan renderer |
 | ElevenLabs | Voice over | Inti video | Pilih model/voice setelah uji Bahasa Indonesia dan pronunciation |
 | Payment gateway | Checkout dan status transaksi | Inti | Midtrans atau Xendit sebagai kandidat, belum dipilih |
@@ -27,7 +27,7 @@ Ini daftar koneksi logis; Auth/Storage dapat berasal dari provider yang sama. Ju
 
 ## Verifikasi publik
 
-- [OpenAI models](https://developers.openai.com/api/docs/models): GPT-6 Astra dan API ID tersedia dalam katalog. Periksa akses akun dan parameter sebelum coding.
+- OpenAI tidak dipakai sejak D-17 (Anthropic saja untuk planner).
 - [Anthropic models](https://platform.claude.com/docs/en/models/overview): Claude Opus 5.5 dan ID API tersedia dalam katalog. Tidak mengganti dengan model lain tanpa keputusan.
 - [ElevenLabs speech with timing](https://elevenlabs.io/docs/api-reference/text-to-speech/convert-with-timestamps/): menyediakan audio dan alignment; dukungan tergantung model/fitur. Perlu uji timing dan pengucapan secara nyata.
 - [TikTok direct post](https://developers.tiktok.com/docs/en/content-posting-api-get-started): scope video.publish memerlukan persetujuan dan otorisasi pengguna; client unaudited dibatasi private viewing. [Sharing guidelines](https://developers.tiktok.com/docs/en/content-sharing-guidelines) menentukan UX dan kelayakan. Audit bukan jaminan lolos; desain produk harus sesuai tujuan yang diperbolehkan.
@@ -63,7 +63,7 @@ Referensi [MCP/catalog](https://higgsfield.ai/mcp?tab=chatgpt) dibuka untuk anal
 - Instagram, Facebook Pages, TikTok publishing via OAuth; penjadwal internal memanggil API saat waktunya. Posting menunggu persetujuan terpisah. Tidak ada Ads API pada MVP.
 - Ekstraksi PDF/CSV, scan upload, probe media dan transkripsi/alignment diperlukan sebagai kemampuan; bisa library/worker, bukan masing-masing langganan API.
 
-Untuk satu konten, gunakan OpenAI untuk rencana/naskah, Anthropic bila perlu menyusun komposisi, renderer untuk hasil, ElevenLabs untuk VO, lalu satu jalur avatar/media yang dipilih. Hindari memanggil HeyGen dan Higgsfield untuk segmen yang sama tanpa kebutuhan. Canva, HeyGen, footage premium dan platform publishing dapat diaktifkan per fitur. Skill aplikasi dipasang pada tahap implementasi, bukan dokumen ini.
+Untuk satu konten, gunakan Anthropic untuk rencana/naskah dan komposisi (D-17), renderer untuk hasil, ElevenLabs untuk VO, lalu satu jalur avatar/media yang dipilih. Hindari memanggil HeyGen dan Higgsfield untuk segmen yang sama tanpa kebutuhan. Canva, HeyGen, footage premium dan platform publishing dapat diaktifkan per fitur. Skill aplikasi dipasang pada tahap implementasi, bukan dokumen ini.
 
 [HeyGen PAYG](https://help.heygen.com/en/articles/10060327-heygen-api-pricing-explained) dan [Higgsfield API](https://higgsfield.ai/higgsfield-api) adalah sumber harga publik; bukan bukti kredensial atau akses produksi.
 
@@ -73,7 +73,7 @@ Eksekusi contoh dihentikan atas permintaan pengguna. Bagian ini adalah rencana i
 
 | Produk/kandidat | Kebutuhan | Prioritas |
 |---|---|---|
-| OpenAI API | Strategi, script, storyboard, caption | Inti produksi |
+| Anthropic API | Strategi, script, storyboard, caption (D-17) | Inti produksi |
 | Anthropic API | Agent penyusun kode/layout motion dalam harness aplikasi | Inti jika komposisi dinamis |
 | ElevenLabs API | VO, alignment/timing | Fitur VO |
 | Higgsfield API | Gambar, footage dan model media yang tersedia pada katalog API | Ditambahkan, media generatif |

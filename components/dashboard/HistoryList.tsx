@@ -2,8 +2,9 @@
 
 import { Film, History, Search } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { findStyle, sampleVideos, statusInfo, type VideoStatus } from "@/lib/video-data";
+import { useEffect, useMemo, useState } from "react";
+import { findStyle, sampleVideos, statusInfo, type SampleVideo, type VideoStatus } from "@/lib/video-data";
+import { listLocalVideos } from "@/lib/video-store";
 
 const filters: { id: "semua" | "aksi" | "proses" | "selesai"; label: string; match: (s: VideoStatus) => boolean }[] = [
   { id: "semua", label: "Semua", match: () => true },
@@ -19,12 +20,18 @@ const tone: Record<VideoStatus, string> = {
 export function HistoryList() {
   const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("semua");
   const [query, setQuery] = useState("");
+  const [local, setLocal] = useState<SampleVideo[]>([]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage hanya tersedia setelah hidrasi
+    setLocal(listLocalVideos());
+  }, []);
 
   const items = useMemo(() => {
     const f = filters.find((x) => x.id === filter)!;
     const q = query.trim().toLowerCase();
-    return sampleVideos.filter((v) => f.match(v.status) && (!q || v.title.toLowerCase().includes(q)));
-  }, [filter, query]);
+    return [...local, ...sampleVideos].filter((v) => f.match(v.status) && (!q || v.title.toLowerCase().includes(q)));
+  }, [filter, query, local]);
 
   return (
     <div className="stack">

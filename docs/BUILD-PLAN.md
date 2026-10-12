@@ -10,7 +10,7 @@ Menggantikan urutan tahap 0–13 di bawah untuk prioritas pengerjaan. Isi tiap t
 |---|---|---|
 | A | Dashboard Studio Video (UI, data contoh): Studio, detail video, Ide Konten, Katalog Gaya, Riwayat, Jadwal, Panduan, Paket, Pengaturan & Brand Kit | Selesai sebagai pratinjau |
 | B | Penyesuaian dokumen ke video-first + langganan | Dikerjakan |
-| C | Planner AI sungguhan (OpenAI): link/naskah/ide → naskah, storyboard, caption tervalidasi | Belakangan, perlu otorisasi biaya API |
+| C | Planner AI sungguhan (Anthropic, D-17): link/naskah/ide → naskah, storyboard, caption tervalidasi | Belakangan, perlu otorisasi biaya API |
 | D | Produksi satu video sungguhan (VO + render satu gaya, misalnya Motion Graphic) dan catat biaya nyata | Belakangan, perlu otorisasi biaya API |
 | E | Uji biaya → pemilik menetapkan harga dan kuota paket langganan | Setelah D |
 | F | Penyimpanan per akun (brief, brand kit, aset, video), langganan + kuota, payment | Setelah E |
@@ -25,7 +25,7 @@ Next.js/React + TypeScript untuk web/backend aplikasi; PostgreSQL dengan Supabas
 
 Baseline yang direkomendasikan untuk build: Next.js App Router + TypeScript; Supabase Auth/PostgreSQL/Storage; Remotion + FFmpeg; Trigger.dev sebagai kandidat workflow; Midtrans sandbox untuk payment; Resend untuk email. Vercel sebagai kandidat hosting web; worker render/container dipilih sesudah uji compute dan biaya. UI component/styling library dipilih saat scaffold setelah desain dasar, bukan dianggap sudah disepakati.
 
-API produksi: OpenAI untuk planner, Anthropic untuk komposisi bila perlu, ElevenLabs untuk VO, Higgsfield untuk media generatif, HeyGen untuk presenter sesuai jalur terpilih. Canva opsional. Instagram/FB Pages/TikTok menjadi modul publishing berikutnya; Ads ditunda. Provider SDK langsung melalui adapter tervalidasi cukup untuk awal; framework multi-agent tambahan tidak wajib.
+API produksi: Anthropic untuk planner dan komposisi (D-17), ElevenLabs untuk VO, Higgsfield untuk media generatif, HeyGen untuk presenter sesuai jalur terpilih. Canva opsional. Instagram/FB Pages/TikTok menjadi modul publishing berikutnya; Ads ditunda. Provider SDK langsung melalui adapter tervalidasi cukup untuk awal; framework multi-agent tambahan tidak wajib.
 
 ## Aturan menjalankan tahapan
 
@@ -77,7 +77,7 @@ Hasil: order paid sandbox tercatat sekali. Gerbang: webhook duplikat/tidak valid
 
 ## 7 — Planner terstruktur
 
-Tugas: schema brief → strategy/script/caption/scenes/slides; validasi source facts, template capability, assets dan missing inputs. Mulai adapter fixture untuk menguji kontrak; aktifkan OpenAI nyata pada fase yang diotorisasi, dengan cost cap dan usage ledger. Pisahkan instruksi sistem dari data upload.
+Tugas: schema brief → strategy/script/caption/scenes/slides; validasi source facts, template capability, assets dan missing inputs. Mulai adapter fixture untuk menguji kontrak; aktifkan Claude (Anthropic) nyata pada fase yang diotorisasi, dengan cost cap dan usage ledger. Pisahkan instruksi sistem dari data upload.
 
 Hasil: draft rencana persisten dan editable. Gerbang: schema tidak valid, fakta tanpa sumber dan kebutuhan aset ditangani; AI tidak mengesahkan payment/approval atau harga.
 

@@ -1,11 +1,13 @@
 import { Palette } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { videoStyles } from "@/lib/video-data";
+import { getVideoStyles } from "@/lib/catalog";
 
 export const metadata = { title: "Katalog Gaya" };
+export const revalidate = 300;
 
-export default function StylesPage() {
+export default async function StylesPage() {
+  const videoStyles = await getVideoStyles();
   return (
     <>
       <PageHeader

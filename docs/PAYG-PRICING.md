@@ -1,4 +1,56 @@
-# Analisis PAYG dan paket konten
+# Analisis harga paket langganan
+
+Status: ANALISIS v0.4 — 12 Oktober 2026. Model bayar dashboard kini **langganan bulanan dengan kuota video** ([DECISIONS](DECISIONS.md) D-14), menggantikan PAYG per komponen. Belum ada angka harga atau kuota yang disetujui; semua angka di dokumen ini adalah alat hitung, bukan tarif. Analisis PAYG lama disimpan di bawah sebagai arsip karena struktur biaya per komponennya masih dipakai untuk menghitung biaya per video.
+
+## A. Cara kerja langganan yang diusulkan
+
+- Klien memilih paket bulanan; tiap paket memberi kuota video per periode tagihan.
+- Membuat dan mengubah **rencana** (naskah, storyboard, caption) tidak memakai kuota.
+- Kuota terpakai saat klien klik "Setujui & Produksi Video".
+- Produksi gagal karena sistem: kuota dikembalikan. Retry internal tidak memakai kuota tambahan.
+- Perbaikan dalam cakupan (gambar salah tempat, typo, pengucapan) tidak memakai kuota.
+- Perubahan konsep/durasi/gaya setelah persetujuan dihitung sebagai video baru (memakai kuota).
+- Gaya premium (presenter AI, cinematic AI) memakai penawaran tambahan yang disetujui sebelum produksi, di luar kuota standar.
+- Usulan nama paket di UI: Starter, Bisnis, Agensi. Fitur pembeda: kuota, jumlah brand, jumlah akun medsos untuk jadwal, prioritas antrean, anggota tim.
+
+## B. Keputusan yang menunggu pemilik
+
+| No | Keputusan | Pilihan yang perlu dipilih |
+|---|---|---|
+| B-1 | Harga tiap paket | Dari hasil uji biaya (bagian C) |
+| B-2 | Kuota video per paket | Misalnya berapa video/bulan untuk Starter, Bisnis, Agensi |
+| B-3 | Video 60 detik | 1 kuota, atau 2 kuota karena biaya VO/render/footage lebih besar |
+| B-4 | Sisa kuota akhir bulan | Hangus, terbawa satu bulan, atau terbawa dengan batas |
+| B-5 | Durasi tagihan | Bulanan saja, atau 3 bulan/tahunan dengan diskon |
+| B-6 | Kuota tambahan | Beli paket tambahan di tengah bulan atau harus naik paket |
+| B-7 | Masa coba | Ada/tidak, berapa video, perlu kartu atau tidak |
+| B-8 | Gaya premium | Harga per detik/adegan atau penawaran manual |
+| B-9 | Pembayaran | Midtrans atau Xendit; tagih otomatis atau perpanjangan manual; refund |
+
+## C. Cara menghitung harga paket
+
+Biaya per video (HPP) = LLM rencana + rencana ulang rata-rata + TTS + render/compute + penyimpanan/transfer + aset/lisensi + QC operator + cadangan koreksi. Angka diambil dari produksi nyata (BUILD-PLAN urutan D), bukan simulasi.
+
+Untuk paket dengan kuota K video dan target margin kontribusi m:
+
+harga paket ≥ (K × HPP rata-rata × tingkat pemakaian + biaya tetap per akun) ÷ (1 − m − fee payment)
+
+- **Tingkat pemakaian**: porsi kuota yang benar-benar dipakai. Jangan asumsikan rendah sebelum ada data; gunakan 100% untuk perhitungan awal agar aman.
+- **Biaya tetap per akun**: penyimpanan, email, alokasi hosting/support.
+- **Fee payment**: persentase dari provider yang dipilih.
+- Target margin (contoh lama 50%) belum keputusan bisnis.
+
+Acuan nilai lama dari pengguna: Rp350.000 untuk satu video fullset, Rp250.000/video pada paket 5, Rp200.000/video pada paket 10. Harga per video efektif dalam paket langganan dapat dibandingkan dengan angka ini.
+
+## D. Batas yang harus dijaga
+
+- Kuota dan batas biaya ditegakkan di server/worker, bukan hanya di UI.
+- Satu persetujuan memakai tepat satu kuota (idempoten terhadap klik ganda atau event berulang).
+- Klien tidak pernah ditagih diam-diam di luar paket; tambahan selalu ditampilkan dan disetujui sebelum dieksekusi.
+
+---
+
+# Arsip: analisis PAYG dan paket konten (v0.3, digantikan D-14)
 
 Status: ANALISIS / USULAN v0.3 — 11 Oktober 2026. Angka komponen di bawah adalah simulasi harga jual, bukan HPP yang sudah diukur dan bukan tarif final. Acuan terbaru: fullset Rp350.000; 5 fullset Rp1.250.000; 10 fullset Rp2.000.000. Paket kembali masuk rancangan. Skill akan dipasang pada aplikasi kemudian.
 

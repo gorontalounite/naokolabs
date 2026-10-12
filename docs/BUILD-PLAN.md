@@ -1,6 +1,23 @@
 # Tahapan build dashboard Naoko Labs
 
-11 Oktober 2026. Rencana pelaksanaan dari fondasi hingga operasi. Dokumen aplikasi dipindahkan ke `/Users/stevenpolapa/Documents/Naoko Labs/Dashboard Content - Dokumen`. Belum membuat repository aplikasi atau menghubungkan layanan.
+Dibuat 11 Oktober 2026, diperbarui 12 Oktober 2026. Aplikasi dibangun di repo `gorontalounite/naokolabs` (landing page di `/`, dashboard di `/app`).
+
+## Urutan terbaru — 12 Oktober 2026
+
+Menggantikan urutan tahap 0–13 di bawah untuk prioritas pengerjaan. Isi tiap tahap tetap menjadi acuan teknis. Dasar: [DECISIONS](DECISIONS.md) D-11–D-15.
+
+| Urutan | Pekerjaan | Status |
+|---|---|---|
+| A | Dashboard Studio Video (UI, data contoh): Studio, detail video, Ide Konten, Katalog Gaya, Riwayat, Jadwal, Panduan, Paket, Pengaturan & Brand Kit | Selesai sebagai pratinjau |
+| B | Penyesuaian dokumen ke video-first + langganan | Dikerjakan |
+| C | Planner AI sungguhan (OpenAI): link/naskah/ide → naskah, storyboard, caption tervalidasi | Belakangan, perlu otorisasi biaya API |
+| D | Produksi satu video sungguhan (VO + render satu gaya, misalnya Motion Graphic) dan catat biaya nyata | Belakangan, perlu otorisasi biaya API |
+| E | Uji biaya → pemilik menetapkan harga dan kuota paket langganan | Setelah D |
+| F | Penyimpanan per akun (brief, brand kit, aset, video), langganan + kuota, payment | Setelah E |
+| G | Login klien diaktifkan (hapus `AUTH_REQUIRED=false`), posting medsos, admin/operator | Terakhir |
+| H | Landing page publik diperbarui | Paling akhir |
+
+Login (tahap 3 lama) dipindah ke akhir atas keputusan pemilik. Kode login dan migrasi workspace sudah ada; selama pengembangan `/app` dibuka tanpa login dengan data contoh. Cabang carousel di tahap 7–10 menjadi tahap berikutnya setelah video berjalan.
 
 ## Stack yang telah diusulkan
 
@@ -18,13 +35,13 @@ Tahap tidak memiliki estimasi hari sampai kapasitas tim, akses layanan, dan scop
 
 ## 0 — Kontrak build dan cakupan MVP
 
-Tugas: kunci baseline stack, roles client/operator/admin, jenis konten yang aktif, batas upload/retensi, fullset 30s versus SKU 60s presenter, harga komponen dan batas perencanaan/revisi. Pisahkan tahap siap produksi dari premium/quote. Backend pricing engine tidak mengandalkan keputusan LLM.
+Tugas: kunci baseline stack, roles client/operator/admin, jenis konten yang aktif (video dulu), batas upload/retensi, durasi 15/30/60 detik dan hitungan kuotanya, harga dan kuota paket langganan, serta batas perencanaan/revisi. Pisahkan tahap siap produksi dari premium/quote. Backend pricing engine tidak mengandalkan keputusan LLM.
 
 Hasil: decision log dan backlog bernomor. Gerbang: detail belum disahkan tetap jelas TBD; UI dapat dibangun dengan harga draf, checkout pelanggan nyata belum aktif.
 
 ## 1 — Repository dan fondasi pengembangan
 
-Tugas: buat repo aplikasi terpisah di bawah Naoko Labs (nama direktori usulan `dashboard-content-app`); pasang Next.js/TypeScript dengan versi yang diverifikasi dan lockfile; susun folder modules/adapters/worker, README aplikasi, AGENTS.md dari template yang ditinjau, env example tanpa rahasia, lint/build serta aturan CI. Dokumentasi tetap terpisah dari repo `one-page` yang sudah ada.
+Selesai dengan perubahan: aplikasi dibangun di repo `naokolabs` yang sama (landing `/` + dashboard `/app`), Next.js standar di Vercel, dokumentasi di `docs/`. Sisa: AGENTS.md, aturan CI, folder worker.
 
 Hasil: aplikasi lokal dapat dibuka dan build berhasil. Gerbang: perintah dalam README benar-benar dapat dijalankan; tidak ada kredensial dalam repo. Git remote dan layanan cloud belum diasumsikan.
 
@@ -52,9 +69,9 @@ Tugas: CRUD katalog/harga, capability aktif, pustaka referensi berizin, paramete
 
 Hasil: planner/preview memakai registry yang jelas. Gerbang: perubahan CMS tidak mengubah snapshot order; tidak mengiklankan template belum teruji sebagai capability siap.
 
-## 6 — Quote PAYG, order dan payment sandbox
+## 6 — Langganan, kuota dan payment sandbox
 
-Tugas: kalkulator server untuk naskah/aset/VO/presenter/jenis/durasi/kuantitas; snapshot quote; checkout sandbox Midtrans; verified webhook, deduplication, status/reconciliation, jalur gagal/expired/refund sesuai kebijakan.
+Tugas (menggantikan quote PAYG, D-14): paket langganan terversi, saldo kuota per periode, pemakaian kuota saat produksi dimulai, pengembalian kuota bila produksi gagal karena sistem, tagihan berulang atau perpanjangan manual (Midtrans/Xendit belum dipilih), verified webhook, deduplication, jalur gagal bayar/kedaluwarsa. Penawaran harga gaya premium tetap ditampilkan sebelum produksi.
 
 Hasil: order paid sandbox tercatat sekali. Gerbang: webhook duplikat/tidak valid tidak memulai kerja ganda; nominal/order cocok; refund/failure policy disiapkan sebelum transaksi nyata.
 

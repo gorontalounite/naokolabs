@@ -1,6 +1,6 @@
 # Spesifikasi fullset untuk pilot
 
-Status: BASELINE PILOT v0.3 — 11 Oktober 2026. Dibuat untuk menguji tarif dan kualitas; belum syarat layanan publik atau persetujuan harga komponen. Pengguna mengotorisasi penyusunan cakupan dan analisis biaya. Angka anchor pengguna tetap Rp350.000/1 konten, Rp1.250.000/5, Rp2.000.000/10 untuk fullset standar.
+Status: BASELINE PILOT v0.3 — 11 Oktober 2026; catatan 12 Oktober: dashboard memprioritaskan video dengan durasi 15/30/60 detik dan langganan + kuota (D-11, D-14); bagian carousel menjadi tahap berikutnya. Dibuat untuk menguji tarif dan kualitas; belum syarat layanan publik atau persetujuan harga komponen. Pengguna mengotorisasi penyusunan cakupan dan analisis biaya. Angka anchor pengguna tetap Rp350.000/1 konten, Rp1.250.000/5, Rp2.000.000/10 untuk fullset standar.
 
 ## Video standar
 
@@ -23,7 +23,7 @@ Batas kata bukan alasan memotong naskah yang disetujui. Bila audio tidak muat du
 
 Fullset stock tidak mengandung shot AI premium tanpa batas. Jika memilih AI-generated, quote memiliki model, detik/gambar, jumlah kandidat internal, biaya dan output yang eksplisit. Dalam UI, bedakan 'Visual standar included' dari 'Footage AI tambahan'.
 
-## Carousel standar
+## Carousel standar (tahap berikutnya, D-11)
 
 | Aspek | Cakupan pilot |
 |---|---|
@@ -38,7 +38,7 @@ Fullset stock tidak mengandung shot AI premium tanpa batas. Jika memilih AI-gene
 
 Copy padat tidak dipaksakan ke slide untuk memenuhi batas. Diagram/ilustrasi khusus atau banyak data perlu quote kompleksitas. Carousel animasi/video adalah SKU lain.
 
-## Komponen carousel — usulan untuk pilot
+## Komponen carousel — usulan untuk pilot (tahap berikutnya)
 
 | Per konten | Satuan | Paket 5 | Paket 10 |
 |---|---:|---:|---:|

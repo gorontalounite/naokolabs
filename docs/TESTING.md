@@ -16,7 +16,7 @@ Status: DRAF; ini rencana pemeriksaan, belum hasil test aplikasi.
 | AC-10 | API timeout/rate limit/budget habis | Retry terbatas atau pause, alasan dan next action jelas |
 | AC-11 | Render kode mencoba akses token/network tak diizinkan | Sandbox menolak; rahasia tidak bocor |
 | AC-12 | Video dinyatakan siap | File valid; seluruh playback, media, teks, audio/timing diperiksa |
-| AC-13 | Carousel dinyatakan siap | Semua slide terbaca, urut, tanpa crop/typo/media salah |
+| AC-13 | (Tahap berikutnya) Carousel dinyatakan siap | Semua slide terbaca, urut, tanpa crop/typo/media salah |
 | AC-14 | Revisi media/typo/pengucapan | Bagian tepat diperbaiki, versi baru di-QC; konsep tetap |
 | AC-15 | Permintaan revisi konsep baru | Dijelaskan sebagai perubahan scope, tidak otomatis ditagih |
 | AC-16 | OAuth token dicabut | Posting berhenti aman dan meminta reconnect |
@@ -33,7 +33,16 @@ Unit test untuk aturan harga, transisi, scope revisi, dan deduplikasi. Integrati
 
 Pilot mengukur waktu, biaya, keberhasilan, dan kualitas: minimal contoh video dengan footage klien, video dengan nama brand yang rawan salah pengucapan, carousel dengan copy panjang, serta skenario revisi. Jumlah sampel/ambang lulus TBD. API mock berguna untuk error cases, tetapi bukti integrasi nyata tetap diperlukan sebelum go-live.
 
-## Tambahan PAYG dan mobile
+## Langganan, kuota dan mobile
+
+- AC-31: membuat dan mengubah rencana tidak mengurangi kuota.
+- AC-32: klik "Setujui & Produksi Video" dua kali atau event berulang hanya memakai satu kuota.
+- AC-33: kuota habis → produksi tidak berjalan, server menolak walau tombol UI dilewati.
+- AC-34: produksi gagal karena sistem mengembalikan kuota dan tercatat di ledger.
+- AC-35: webhook pembayaran ganda tidak menambah kuota dua kali; langganan past_due tidak membuka kuota baru.
+- AC-36: gaya premium tidak diproduksi sebelum penawaran disetujui.
+
+## Arsip: tambahan PAYG dan mobile (AC-23–AC-27 digantikan AC-31–AC-36; AC-28 tetap berlaku)
 
 - AC-23: fullset standar menghitung tepat Rp350.000 untuk 1, Rp1.250.000 untuk 5, Rp2.000.000 untuk 10 pada tariff yang disetujui; simulasi analisis tidak dianggap tariff live.
 - AC-24: menonaktifkan visual/VO/naskah/musik mengurangi komponen pada tier benar; tidak menagih dua kali audio native atau aset yang sudah tersedia.

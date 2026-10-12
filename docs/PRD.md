@@ -10,21 +10,26 @@ Usulan: client owner (pemesanan, pembayaran, persetujuan, koneksi akun); client 
 
 Daftar/login, verifikasi akun, reset password, logout, pengaturan profil. Satu workspace/organisasi memiliki anggota dan satu atau beberapa brand. Semua pesanan, aset, hasil, dan akun sosial berada di workspace tertentu. Metode login final TBD.
 
-## FR-02 Form pemesanan
+## FR-02 Studio Video (form pemesanan)
 
-Nama klien/brand, kategori, keluaran video Reels/Story atau Carousel, format/gaya produksi (UGC, Explainer, Motion Graphic, Cinematic, Illustration, Animation, Whiteboard sesuai capability aktif), jumlah konten/tier satuan atau paket 5/10, referensi visual, nama campaign/promo/content, tujuan, audiens, brief/notes, CTA, warna dominan, logo/font dan identitas brand, bahasa, serta kanal tujuan.
+Produk pertama adalah video vertikal 9:16 (Reels/Story/TikTok). Carousel menyusul dengan form tersendiri.
 
-Reels/Story menampilkan durasi, rasio, pilihan voice, contoh pengucapan nama, backsound/jingle, serta footage. Carousel menampilkan jumlah slide, rasio, dan urutan pesan; durasi/VO tidak diwajibkan.
+Klien memilih satu dari tiga cara memasukkan bahan:
+- **Link Web**: link produk marketplace, artikel, atau postingan medsos. Sistem membaca isi halaman sebagai data. Bila halaman tidak bisa dibaca (diblokir, perlu login), klien diminta menempel teksnya.
+- **Tulis Naskah**: naskah atau poin dari klien, dipakai apa adanya; AI hanya menyusun adegan dan caption.
+- **Ide Singkat**: satu kalimat topik. Ide Konten (momen jualan, contoh ide) dapat mengisi kolom ini.
 
-Brief bisa ditulis manual atau diunggah: PDF, CSV, gambar, video, audio. Ekstraksi menghasilkan draf untuk diperiksa klien, bukan instruksi langsung ke agen. CSV memerlukan pratinjau dan pemetaan kolom sebelum membuat beberapa item. PDF hasil scan memerlukan OCR bila dipilih dan tersedia.
+Pilihan lain: durasi 15/30/60 detik; gaya bahasa (Edukasi, Promosi, Hook Viral, Santai, Formal); gaya video dari Katalog Gaya (standar atau perlu penawaran); voice-over dan suaranya; musik latar; subtitle. Brand kit (nama, handle, logo, warna, ajakan penutup) diambil dari Pengaturan.
 
-Konfigurasi PAYG memisahkan sumber visual (klien/tanpa footage/stock/AI/custom), sumber naskah, VO, dan musik. Komponen saling independen; tanpa VO tetap dapat memakai musik/naskah. Harga dihitung server dari komponen pada tier order dan batas yang dipilih, mengikuti [analisis PAYG](PAYG-PRICING.md) setelah tariff disetujui. Pilihan premium belum teruji memakai quote, tidak harga standar otomatis.
+Unggahan aset (logo, foto, rekaman untuk gaya UGC, PDF/CSV sebagai sumber) diperlakukan sebagai data, bukan instruksi ke agen. Spesifikasi dan batas yang belum ditetapkan tidak boleh diasumsikan oleh AI.
 
-Harga tampil dari versi katalog yang berlaku. Spesifikasi dan batas yang belum ditetapkan tidak boleh diasumsikan oleh AI. Item pesanan menyimpan brief masing-masing; bulk duplicate tersedia sebagai usulan.
+Tombol utama "Buat Rencana Video" tidak memakai kuota. Gaya premium menampilkan penawaran tambahan sebelum produksi.
 
-## FR-03 Payment
+## FR-03 Langganan, kuota dan payment
 
-Checkout memuat item, spesifikasi, harga, biaya tambahan yang sudah ditetapkan, dan total. Provider payment belum dipilih. Order menyimpan snapshot harga, versi tarif, breakdown komponen dan allowance. Penghapusan komponen menghitung ulang sebelum bayar; perubahan setelah paid menjadi quote/change request terpisah. Kegagalan/retry internal tidak otomatis menambah tagihan pelanggan. Status paid hanya berasal dari verifikasi server/provider. Payment gagal/expired tidak memulai produksi berbayar. Refund dan kegagalan setelah pembayaran memerlukan kebijakan sebelum go-live.
+Klien berlangganan paket bulanan yang memberi kuota video per periode (D-14). Kuota terpakai saat klien menyetujui rencana dan produksi dimulai; penyusunan rencana dan perubahan rencana sebelum persetujuan tidak memakai kuota. Produksi yang gagal karena sistem mengembalikan kuota. Gaya premium memakai penawaran tambahan yang disetujui sebelum produksi.
+
+Dashboard menampilkan paket aktif, sisa kuota dan tanggal perpanjangan. Status langganan aktif hanya berasal dari verifikasi server/provider; pembayaran gagal/kedaluwarsa tidak membuka kuota baru. Harga paket, kuota, hitungan video 60 detik, sisa kuota akhir bulan, provider payment (Midtrans/Xendit), tagihan otomatis vs perpanjangan manual, serta refund belum diputuskan dan wajib ditetapkan sebelum go-live.
 
 ## FR-04 Rencana dan persetujuan
 
@@ -34,13 +39,13 @@ Script ditampilkan sebelum persetujuan agar klien menyetujui kata yang benar-ben
 
 ## FR-05 Produksi
 
-Jalankan cabang sesuai item: video dengan VO bila dipilih; carousel dengan render slide. OpenAI menyusun rencana/naskah; ElevenLabs mengubah naskah final menjadi suara; Anthropic membantu komposisi Remotion/slide; renderer menghasilkan file. HeyGen/Kling/Seedance/Canva hanya dipakai bila kebutuhan konten memerlukannya dan akses/biaya sudah jelas.
+Jalankan cabang video dengan VO bila dipilih. Cabang carousel (render slide) adalah tahap berikutnya. OpenAI menyusun rencana/naskah; ElevenLabs mengubah naskah final menjadi suara; Anthropic membantu komposisi Remotion/slide; renderer menghasilkan file. HeyGen/Kling/Seedance/Canva hanya dipakai bila kebutuhan konten memerlukannya dan akses/biaya sudah jelas.
 
 Status mencakup antrean, sedang diproses, menunggu klien, gagal, dan selesai. Progress mengacu kejadian nyata; estimasi yang belum terkalibrasi diberi label estimasi. Menutup browser tidak membatalkan pekerjaan. Satu item gagal tidak otomatis menggagalkan item lain.
 
 ## FR-06 Hasil dan revisi
 
-Preview video lengkap dengan audio atau carousel seluruh slide; caption; download; riwayat versi. Hasil siap disetujui hanya setelah QC dan file tersedia.
+Preview video lengkap dengan audio (carousel seluruh slide pada tahap berikutnya); caption; download; riwayat versi. Hasil siap disetujui hanya setelah QC dan file tersedia.
 
 Revisi: penempatan gambar/video; typo; pengucapan VO keliru. Form meminta scene/timestamp atau nomor slide, kesalahan, hasil yang diminta, dan aset pengganti bila relevan. Kesalahan pipeline bukan pesanan baru. Perubahan konsep/durasi/style di luar persetujuan awal dikategorikan permintaan baru dan diberi penjelasan, tanpa otomatis menagih.
 
@@ -72,7 +77,7 @@ Template, prompt, dan skill memiliki versi. Perubahan CMS tidak mengubah pesanan
 
 ## Kontrak pilot dan komersial
 
-FULLSET-SPEC menjadi acuan baseline pilot video/carousel, PAYG menjadi kandidat kalkulasi komponen, BUSINESS-RULES memuat aturan operasional draf. UI harus membedakan layanan siap/quote/belum tersedia. Jangan memasarkan baseline pilot atau simulasi HPP sebagai capability produksi yang sudah terbukti.
+FULLSET-SPEC menjadi acuan baseline pilot video (carousel tahap berikutnya), [analisis harga langganan](PAYG-PRICING.md) menjadi dasar harga paket, BUSINESS-RULES memuat aturan operasional draf. UI harus membedakan layanan siap/quote/belum tersedia. Jangan memasarkan baseline pilot atau simulasi HPP sebagai capability produksi yang sudah terbukti.
 
 ## FR-09 Storyboard visual dan preview
 

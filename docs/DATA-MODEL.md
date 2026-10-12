@@ -1,6 +1,6 @@
 # Model data konseptual
 
-Status: DRAF; bukan migration SQL final.
+Status: DRAF; bukan migration SQL final. Migration pertama (identitas, workspace, brand + RLS) ada di `supabase/migrations/`.
 
 | Kelompok | Entitas | Hubungan/tanggung jawab |
 |---|---|---|
@@ -33,7 +33,13 @@ Status: DRAF; bukan migration SQL final.
 
 Hak member, brand count, retensi, penghapusan akun, audit retention, apakah caption editing setelah output acceptance memerlukan approval caption baru, dan kebijakan revisi terjadwal. Usulan: setiap perubahan yang memengaruhi publikasi harus tampil pada konfirmasi publikasi baru.
 
-## Tambahan PAYG
+## Langganan dan kuota (D-14)
+
+plans/plan_versions (nama, harga, kuota per periode, fitur, masa berlaku); subscriptions (organization_id, plan_version, status, periode mulai/akhir, provider_ref); quota_ledger (organization_id, subscription_id, periode, delta, alasan: grant/consume/refund/adjust, video_id, idempotency_key unik); premium_quotes untuk gaya premium. Saldo kuota = jumlah delta pada periode berjalan; pemakaian dan pengembalian hanya lewat fungsi server dalam satu transaksi dengan approval.
+
+Tabel videos menggantikan order_items untuk produk video: input_mode (link/naskah/ide), source_url/source_text, duration, tone, style_id, voice, music, subtitles, status, plan_version aktif.
+
+## Arsip: tambahan PAYG (digantikan D-14)
 
 price_versions diperluas ke pricing_profiles, component_rates dan quantity_tiers (atau struktur ekuivalen): format/gaya, envelope, unit, jumlah, included allowances, harga dan masa berlaku. quotes/quote_items menyimpan konfigurasi, currency, tier, rincian harga dan expiry sebelum checkout. order_items menyimpan snapshot quote yang dibayar. change_requests menyimpan perubahan scope dan quote tambahan. usage_ledger tetap mencatat biaya aktual provider yang terpisah dari tagihan klien; batch parent mengagregasi item tanpa menduplikasi biaya bersama. Jumlah naskah baru/varian/output dan detik generated footage adalah field eksplisit.
 

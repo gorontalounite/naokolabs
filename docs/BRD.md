@@ -19,18 +19,20 @@ Mengurangi koordinasi manual tanpa melepas kendali klien atas brief, pesan brand
 
 ## Harga
 
+Model bayar terbaru (D-14): **langganan bulanan dengan kuota video**. Rencana video (naskah, storyboard, caption) tidak memakai kuota; kuota terpakai saat klien menyetujui rencana dan produksi dimulai. Gaya premium (presenter AI, cinematic AI) memakai penawaran tambahan yang ditampilkan sebelum produksi.
+
+Belum ditetapkan dan harus dihitung dari biaya produksi nyata: harga tiap paket, kuota video per paket, apakah video 60 detik dihitung lebih dari satu kuota, nasib sisa kuota di akhir bulan, diskon durasi tagihan. Analisis ada di [PAYG-PRICING](PAYG-PRICING.md).
+
+Harga awal dari pengguna tetap dicatat sebagai acuan nilai:
+
 | Layanan | Harga dasar dari pengguna | Unit |
 |---|---:|---|
 | Web landing page | Rp750.000 | Per tahun, termasuk domain |
 | Web multiple page | Rp1.500.000 | Per tahun, termasuk domain |
-| Video standar fullset | Rp350.000 | Satu video; batas jenis, durasi dan aset TBD |
-| Carousel fullset | Rp350.000 | Satu konten Carousel, jumlah slide TBD |
+| Video standar fullset | Rp350.000 | Satu video (acuan model PAYG lama) |
+| Carousel fullset | Rp350.000 | Satu konten carousel (tahap berikutnya) |
 
-Model terbaru adalah PAYG per komponen yang dipesan, dengan tarif tier paket. Acuan fullset pengguna: Rp1.250.000/5 konten dan Rp2.000.000/10 konten yang dipilih sekaligus. Fullset mencakup footage/aset, naskah, dan VO untuk video sesuai batas yang akan diputuskan; carousel memakai komponen yang relevan tanpa VO/musik statis. Tidak memasukkan semua jenis premium tanpa batas.
-
-Tanpa penyediaan footage/visual, tanpa VO, atau memakai naskah klien menghasilkan harga berbeda. Pengurangan menggunakan komponen pada tier paket, bukan harga satuan tanpa diskon. Lihat [analisis PAYG](PAYG-PRICING.md) untuk simulasi dan ketentuan; angka komponen belum disetujui. Satu konten Carousel bukan satu slide, dan satu video tidak otomatis mencakup banyak versi/rasio.
-
-Pajak, fee payment, biaya posting, penyimpanan, revisi, premium asset, dan perpanjangan domain belum ditetapkan. Total checkout harus transparan setelah keputusan tersebut tersedia.
+Model PAYG per komponen dan paket 5/10 (D-07) digantikan D-14 untuk dashboard. Pajak, fee payment, penyimpanan, revisi, premium asset dan perpanjangan domain belum ditetapkan.
 
 ## Segmen klien
 

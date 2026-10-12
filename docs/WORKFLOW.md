@@ -1,17 +1,19 @@
 # Workflow produksi dan publikasi
 
-Status: DRAF. Setiap item memiliki workflow sendiri; order mengagregasi jumlah selesai/gagal/menunggu. Jangan memakai satu status untuk payment, produksi, dan publikasi.
+Status: DRAF, diperbarui 12 Oktober 2026 (video-first, langganan + kuota). Setiap item memiliki workflow sendiri; order mengagregasi jumlah selesai/gagal/menunggu. Jangan memakai satu status untuk payment, produksi, dan publikasi.
 
-## Payment
+## Langganan dan kuota
 
-draft → pending_payment → paid. Cabang: failed, expired, refund_pending, refunded sesuai kebijakan/provider. Event berulang tidak boleh memberi kredit/dispatch berulang. Paid memulai perencanaan, bukan otomatis render sebelum approval.
+Status langganan: trial (bila ada) → active → past_due → canceled/expired. Saldo kuota per periode. Event pembayaran berulang tidak boleh menambah kuota dua kali.
+
+Kuota dipakai pada transisi awaiting_plan_approval → approved → production_queued, dalam satu transaksi dengan pencatatan persetujuan. Kuota kurang: status needs_quota, produksi tidak berjalan. Produksi gagal karena sistem: kuota dikembalikan dan dicatat di ledger. Rencana (planning) tidak memakai kuota.
 
 ## Per item
 
 1. brief_draft: klien mengisi, unggahan divalidasi, hasil ekstraksi ditinjau.
-2. planning_queued/planning: pembayaran valid; AI menyusun strategi, script, storyboard/slide, draf caption.
+2. planning_queued/planning: klien klik "Buat Rencana Video"; AI menyusun strategi, naskah, storyboard dan draf caption. Tidak memakai kuota.
 3. awaiting_plan_approval: klien melihat versi lengkap; edit menghasilkan versi baru.
-4. approved: simpan siapa/kapan/versi yang disetujui; pastikan payment masih memenuhi kebijakan.
+4. approved: simpan siapa/kapan/versi yang disetujui; langganan aktif dan kuota tersedia, lalu satu kuota dipakai.
 5. production_queued: reserve budget dan antrekan cabang sesuai jenis.
 6. producing: generate voice bila perlu; finalisasi timing; komposisi; render; simpan output per tahap.
 7. quality_check: periksa media, teks, timing, pengucapan, seluruh slide, dan caption.
@@ -25,7 +27,7 @@ Status tambahan: needs_input (aset tidak cukup), retry_wait, failed, budget_paus
 
 Reels/Story: script disetujui → TTS bila dipilih → ukur audio/alignment → komposisi mengikuti audio → render video → QC visual/audio.
 
-Carousel: pesan dan urutan slide disetujui → layout/template → render slide → QC seluruh slide → caption. ElevenLabs/HeyGen tidak diperlukan untuk carousel statis.
+Carousel (tahap berikutnya): pesan dan urutan slide disetujui → layout/template → render slide → QC seluruh slide → caption. ElevenLabs/HeyGen tidak diperlukan untuk carousel statis.
 
 Kling/Seedance untuk footage sintetis tambahan; HeyGen untuk presenter/avatar bila dipilih; Canva untuk template/desain editable bila dipilih. Semuanya opsional dan memerlukan spesifikasi serta batas biaya.
 

@@ -1,21 +1,23 @@
 # UI/UX dashboard
 
-Status: DRAF; identitas visual dan referensi UI belum dipilih.
+Status: DRAF, diperbarui 12 Oktober 2026. Pola alur mengikuti referensi InstaDeck pilihan pemilik (D-12); identitas visual NaokoLabs (krem, tinta, vermilion; Manrope).
 
 ## Navigasi klien
 
-Beranda; Pesanan; Buat Konten; Brand & Aset; Hasil Konten; Posting & Kalender; Akun Sosial; Pembayaran; Bantuan & Revisi. Nama dan jumlah menu dapat disederhanakan setelah prototipe.
+Menu (D-15): Studio Video; Ide Konten; Katalog Gaya; Riwayat Video; Jadwal & Auto-Post; Panduan; Paket & Kuota; Pengaturan & Brand Kit. Sidebar menampilkan kartu kuota bulan ini dan akun.
 
-Alur Buat Konten: pilih jenis dan jumlah → pilih referensi → isi brief spesifik → upload dan tinjau → ringkasan biaya → payment → rencana → persetujuan → progress → hasil/revisi → persetujuan final → posting/jadwal.
+Alur Buat Video: pilih cara input (Link Web / Tulis Naskah / Ide Singkat) → durasi 15/30/60 detik → gaya bahasa → gaya video → suara, musik, subtitle → "Buat Rencana Video" → halaman video dengan penanda Rencana → Produksi → Hasil → Posting dan satu kotak "Yang perlu Anda lakukan" per tahap.
+
+Halaman video menjadi pusat: rencana (storyboard per adegan, naskah, caption), persetujuan yang memakai kuota, progres produksi, hasil dan perbaikan, lalu jadwal atau unduh. Status internal tidak ditampilkan ke klien.
 
 ## Tampilan penting
 
 - Beranda: pekerjaan butuh persetujuan, pesanan aktif, jadwal terdekat dan tindakan untuk error.
 - Detail item: brief, strategi, script, storyboard/slide, aset terikat, riwayat persetujuan dan status.
-- Hasil: video dengan audio atau semua slide berurutan, caption, download, dan revisi terarah.
+- Hasil: video dengan audio (carousel pada tahap berikutnya), caption, download, dan revisi terarah.
 - Kalender: waktu/zona, akun tujuan, thumbnail, status per kanal, ubah/batalkan.
 - Akun Sosial: nama akun dan platform, izin/format yang tersedia, perlu reconnect, disconnect.
-- Payment: invoice/status/total yang berasal dari server.
+- Paket & Kuota: paket aktif, sisa kuota, tanggal perpanjangan, dan tagihan yang berasal dari server.
 
 Progress menyebut pekerjaan yang sedang berlangsung. Saat menunggu persetujuan, tampilkan tindakan klien; saat gagal, jelaskan opsi pemulihan. Nama model, token, dan pesan teknis raw tidak perlu muncul pada flow klien.
 
@@ -32,7 +34,7 @@ Form berbeda untuk video/carousel, validasi di dekat field, autosave dengan stat
 Seluruh alur klien harus selesai di ponsel, bukan hanya halaman beranda. Uji viewport 360, 390, 430, 768 dan 1280 piksel serta browser Safari iOS dan Chrome Android yang didukung. Target minimum dukungan browser/version ditetapkan sebelum implementasi.
 
 - Mobile memakai satu kolom dan form bertahap, label jelas, simpan draf dan lanjutkan setelah upload/checkout.
-- Kartu harga menunjukkan total dan daftar komponen; sticky ringkasan/CTA tidak menutupi field, error, keyboard atau safe area.
+- Kartu kuota menunjukkan sisa kuota dan apa yang memakai kuota; tombol utama tidak menutupi field, error, keyboard atau safe area.
 - Pilihan format, gaya, sumber aset, naskah, VO dan musik dipisah. Komponen tak relevan disembunyikan (misalnya VO pada carousel statis). Harga berubah segera pada pilihan, lalu diverifikasi server saat quote.
 - Sidebar desktop menjadi drawer/menu pada mobile. Hindari menampilkan semua menu panjang sekaligus.
 - Tabel order/admin menjadi kartu dengan detail yang dapat dibuka. Storyboard menjadi kartu scene/slide; jangan memaksa tabel desktop lebar.
@@ -42,7 +44,7 @@ Seluruh alur klien harus selesai di ponsel, bukan hanya halaman beranda. Uji vie
 - Target sentuh utama sekurangnya 44×44 CSS pixel sebagai ketentuan desain proyek; jangan mengandalkan hover.
 - Tidak ada horizontal scroll halaman pada lebar 360 piksel; konten khusus yang membutuhkan scroll berada dalam container dengan petunjuk.
 
-Acceptance: user dapat login → memesan konfigurasi PAYG → upload → bayar → approve → preview/revisi → pilih akun/jadwal dari ponsel, dengan teks/biaya terbaca tanpa zoom manual dan tanpa aksi tertutup keyboard/overlay.
+Acceptance: user dapat membuat video di Studio → meninjau dan menyetujui rencana → melihat progres → meninjau hasil/revisi → menjadwalkan dari ponsel; login dan pembayaran langganan diuji di tahap akhir, dengan teks/biaya terbaca tanpa zoom manual dan tanpa aksi tertutup keyboard/overlay.
 
 ## Konfigurator video 60s + presenter
 

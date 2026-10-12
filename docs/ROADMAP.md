@@ -1,18 +1,16 @@
-# Roadmap yang diusulkan
+# Roadmap
 
-Status: DRAF; urutan implementasi, bukan penghapusan layanan dari visi produk. Durasi kalender belum ditetapkan.
+Status: DRAF, diperbarui 12 Oktober 2026 mengikuti [DECISIONS](DECISIONS.md) D-11–D-15. Urutan rinci ada di [BUILD-PLAN](BUILD-PLAN.md) bagian "Urutan terbaru". Durasi kalender belum ditetapkan.
 
 | Tahap | Pekerjaan | Gerbang selesai |
 |---|---|---|
-| 0 — spesifikasi dan validasi | Tetapkan envelope fullset, komponen/tier PAYG satuan/5/10 dan HPP, alur/roles, satu contoh Reels dan satu Carousel, uji provider/render | Kualitas, waktu, biaya dan akses API terukur; keputusan komersial cukup untuk checkout |
-| 1 — fondasi | Login, workspace/brand, form, upload, CMS harga/referensi, order dan payment sandbox | Isolasi klien, snapshot harga, webhook/deduplikasi lolos |
-| 2 — produksi | Rencana, approval versi, worker OpenAI/ElevenLabs/Anthropic/Remotion, hasil/caption, revisi | Alur lengkap dan recovery diuji; media benar-benar diinspeksi |
-| 3 — publishing | OAuth, capability per akun, publish sekarang, scheduler, status/reconnect/reconciliation | Kanal yang dipilih lolos proof of integration dan review/audit yang diperlukan |
-| 4 — perluasan | Canva, HeyGen, Kling/Seedance sesuai kebutuhan; copywriting terpisah; perluasan tipe/premium PAYG setelah pilot | Tiap tambahan punya pilot kualitas/biaya dan kontrak API |
-| 5 — layanan lanjutan | Produksi website terintegrasi dan pengelolaan iklan bila pengguna mengaktifkan kembali | BRD/PRD/ARD modul terpisah dan otorisasi baru |
+| 1 — dashboard pratinjau | Studio Video dan halaman pendukung dengan data contoh | Alur bisa dicoba dari ponsel tanpa login |
+| 2 — planner AI | Link/naskah/ide → naskah, storyboard, caption terstruktur | Rencana valid, fakta bersumber, biaya per rencana tercatat |
+| 3 — produksi video | VO + render satu gaya standar, QC, hasil | Video nyata diperiksa penuh; biaya per video terukur |
+| 4 — harga paket | Hitung harga dan kuota langganan dari biaya nyata | Pemilik menetapkan harga, kuota, aturan 60 detik dan sisa kuota |
+| 5 — akun dan pembayaran | Penyimpanan per workspace, langganan + kuota, payment, login klien | Isolasi klien, webhook/deduplikasi, kuota tidak terpakai ganda |
+| 6 — publishing | OAuth, posting sekarang, jadwal, status/reconnect | Kanal lolos proof of integration dan review yang diperlukan |
+| 7 — perluasan | Carousel, gaya premium (presenter/cinematic AI), Canva/HeyGen/Kling/Seedance sesuai kebutuhan | Tiap tambahan punya pilot kualitas/biaya |
+| 8 — landing page & layanan lanjutan | Landing page publik baru, produksi website, pengelolaan iklan bila diaktifkan | Modul terpisah dan otorisasi baru |
 
-Prioritas pilot dapat dimulai carousel untuk menguji checkout/approval/render dengan dependensi lebih sedikit; video diuji pada tahap yang sama sebelum menjual kemampuan video. Jangan menunggu seluruh API tersedia untuk membuktikan alur inti, dan jangan menjual otomatisasi yang belum teruji.
-
-## Rencana build terbaru
-
-Gunakan [BUILD-PLAN](BUILD-PLAN.md) sebagai urutan pelaksanaan rinci. Pembuatan contoh saat ini dihentikan pengguna; fondasi/UI/kontrak adapter dapat dikerjakan memakai fixture berlabel, sedangkan gerbang produksi nyata harus selesai sebelum fitur dijual. Dokumen ini tidak mengotorisasi contoh atau spending baru.
+Jangan menjual otomatisasi yang belum teruji. Pembuatan contoh berbayar menunggu otorisasi pemilik.

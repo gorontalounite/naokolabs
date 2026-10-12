@@ -1,20 +1,22 @@
 # Aturan bisnis operasional — draf
 
-Status: USULAN v0.3. Bukan terms hukum final. 11 Oktober 2026. Harga mengacu BRD/PAYG, unit pada FULLSET-SPEC.
+Status: USULAN v0.4. Bukan terms hukum final. Diperbarui 12 Oktober 2026: langganan + kuota (D-14). Harga mengacu BRD dan [analisis langganan](PAYG-PRICING.md), unit pada FULLSET-SPEC.
 
-## Quote dan order
+## Langganan dan kuota
 
-Harga dihitung server dari jenis/komponen/quantity/batas, ditampilkan sebelum bayar, dan disimpan sebagai snapshot. Input brief/asset yang tidak cukup perlu dilengkapi; biaya rewrite/premium dikutip sebelum charge. Satu konten mempunyai satu output standar dan satu approval chain; variasi baru dapat menjadi item tambahan.
+Klien berlangganan paket bulanan dengan kuota video. Rencana video dan perubahan rencana sebelum persetujuan tidak memakai kuota. Satu persetujuan "Setujui & Produksi Video" memakai satu kuota (hitungan untuk video 60 detik belum diputuskan). Klik ganda, retry, atau event berulang tidak boleh memakai kuota dua kali.
 
-Usulan quantity lain menggunakan kombinasi paket + satuan yang transparan agar pesanan 6 tidak lebih mahal daripada 10 tanpa penjelasan. Untuk pilot, pelanggan memilih 1/5/10; keputusan kuantitas bebas dan mixed format ditetapkan sebelum checkout.
+Produksi gagal karena sistem mengembalikan kuota. Perbaikan dalam cakupan tidak memakai kuota. Perubahan konsep, durasi, gaya atau suara setelah persetujuan diproses sebagai video baru dengan konfirmasi klien. Gaya premium memakai penawaran tambahan yang ditampilkan dan disetujui sebelum produksi; tidak ada tagihan diam-diam di luar paket.
+
+Kuota habis: dashboard menawarkan naik paket atau kuota tambahan (aturan B-6 di analisis langganan belum diputuskan); produksi tidak berjalan tanpa kuota. Sisa kuota akhir bulan mengikuti keputusan B-4.
 
 ## Payment, cancel dan refund
 
-Pembayaran valid memulai perencanaan; production setelah approval. Payment pending/expired/invalid tidak memulai produksi. Tidak ada tagihan atas retry internal tanpa consent tambahan.
+Langganan aktif hanya berdasarkan verifikasi server/provider. Pembayaran pending/gagal/kedaluwarsa tidak membuka kuota baru; video yang sudah selesai tetap dapat diunduh sesuai kebijakan retensi. Tidak ada tagihan atas retry internal.
 
-Usulan: sebelum paid, draft dapat dibatalkan tanpa charge. Setelah paid tetapi sebelum pekerjaan dimulai, proses cancellation mengikuti refund policy/payment fee yang disepakati. Setelah perencanaan/approval/produksi dimulai, operator menilai bagian yang sudah dikerjakan dan kegagalan; sistem tidak otomatis memakai aturan no-refund untuk semua keadaan.
+Usulan: pembatalan langganan berlaku di akhir periode berjalan; kuota yang tersisa tetap bisa dipakai sampai periode berakhir. Refund, pro-rata, perpanjangan otomatis vs manual, dan masa tenggang gagal bayar belum ditetapkan dan perlu kajian vendor serta ketentuan hukum sebelum dipublikasikan. Dokumen ini tidak menyatakan hak hukum pelanggan.
 
-Jika layanan gagal memenuhi output yang dibayar: tawarkan perbaikan yang layak atau penanganan refund sesuai kebijakan yang akan diputuskan. Angka potongan, waktu settlement, non-refundable fee dan partial refund belum ditetapkan. Kajian vendor dan ketentuan hukum diperlukan sebelum kebijakan dipublikasikan; dokumen ini tidak menyatakan hak hukum pelanggan.
+Jika layanan gagal memenuhi video yang kuotanya sudah terpakai: perbaiki atau kembalikan kuota sesuai kebijakan yang akan diputuskan.
 
 ## Approval dan revisi
 
@@ -36,4 +38,4 @@ Saat budget stop/provider gagal, tunjukkan status dan tindakan; jangan mengganti
 
 ## SKU presenter 60 detik
 
-Rp350.000 sedang diuji untuk motion standar dengan presenter opening/closing total 15–20 detik. Paket 5/10 untuk SKU baru belum disahkan berdasarkan biaya nyata. Audio native presenter tidak dikenai biaya ElevenLabs ganda untuk segmen yang sama. Detik billable provider menghitung seluruh kandidat; pelanggan mendapat quote terkunci dan perubahan yang disetujui, bukan tagihan retry cacat layanan.
+Presenter opening/closing total 15–20 detik kini termasuk gaya premium "Presenter AI" yang memakai penawaran tambahan di luar kuota standar. Angka Rp350.000 berasal dari analisis PAYG lama. Audio native presenter tidak dikenai biaya ElevenLabs ganda untuk segmen yang sama. Detik billable provider menghitung seluruh kandidat; pelanggan mendapat quote terkunci dan perubahan yang disetujui, bukan tagihan retry cacat layanan.

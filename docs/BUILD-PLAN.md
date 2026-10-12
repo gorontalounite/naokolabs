@@ -30,7 +30,7 @@ Urutan D–F di atas diuraikan menjadi tahap P1–P7. Alur Studio: **tulis ide �
 | P3 | **Render MP4** lewat GitHub Actions (D-24): workflow `render` menerima spesifikasi video (JSON), merender dengan Remotion + FFmpeg, mengunggah MP4 ke Supabase Storage | MP4 dari storyboard contoh, durasi tepat | Berikutnya |
 | P4 | **Suara**: ElevenLabs TTS per adegan (durasi adegan mengikuti audio), voice-over unggahan, backsound dengan ducking | MP4 bersuara; durasi per adegan cocok dengan audio | Setelah P3 |
 | P5 | **Footage**: unggah ke Supabase Storage (bucket privat `footage`, URL bertanda tangan dari server), dipakai di komposisi | Footage pelanggan tampil di pratinjau dan MP4 | Selesai di kode; perlu migrasi dan `SUPABASE_SERVICE_ROLE_KEY` |
-| P6 | **Antrean dan status**: tombol Produksi membuat pekerjaan, progres nyata, hasil bisa diunduh, perbaikan | Dari klik Produksi sampai unduh MP4 | Setelah P4 dan P5 |
+| P6 | **Antrean dan status**: tombol Produksi membuat pekerjaan (`/api/produksi`), worker GitHub Actions merender dan mengunggah ke bucket `produksi`, dashboard memantau dan menyediakan unduhan | Dari klik Produksi sampai unduh MP4 | Selesai di kode; perlu secret dan `render.yml` di branch utama |
 | P7 | Biaya nyata per video (token Claude, karakter ElevenLabs, waktu render) dicatat | Tabel biaya per video, dasar harga paket | Setelah P6 |
 
 Tempat render diputuskan: **GitHub Actions** (D-24), karena rendering tidak bisa berjalan di fungsi Vercel biasa. Konsekuensi: waktu tunggu beberapa menit per video (antrean runner + install + render), batas menit gratis per bulan, dan aplikasi memicu workflow lewat GitHub API dengan token terbatas yang disimpan sebagai secret Vercel.

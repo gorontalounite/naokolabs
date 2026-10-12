@@ -4,9 +4,10 @@ import { getCurrentUser } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/workspace";
 
 export const BUCKET = "footage";
-export const FOOTAGE_LIMITS = { gambar: 10 * 1024 * 1024, video: 50 * 1024 * 1024 } as const;
+export const FOOTAGE_LIMITS = { gambar: 10 * 1024 * 1024, video: 50 * 1024 * 1024, audio: 30 * 1024 * 1024 } as const;
 export const MAX_FOOTAGE_FILES = 15;
-const MIME: Record<string, "gambar" | "video"> = {
+const MIME: Record<string, "gambar" | "video" | "audio"> = {
+  "audio/mpeg": "audio", "audio/mp4": "audio", "audio/x-m4a": "audio", "audio/wav": "audio", "audio/aac": "audio",
   "image/png": "gambar", "image/jpeg": "gambar", "image/webp": "gambar",
   "video/mp4": "video", "video/quicktime": "video", "video/webm": "video",
 };

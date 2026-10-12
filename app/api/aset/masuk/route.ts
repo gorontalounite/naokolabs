@@ -19,13 +19,13 @@ export async function POST(request: NextRequest) {
 
   for (const f of parsed.data.files) {
     const kind = kindOfMime(f.type);
-    if (!kind) return NextResponse.json({ error: `Jenis berkas ${f.name} tidak didukung. Gunakan PNG, JPG, WebP, MP4, MOV, atau WebM.` }, { status: 415 });
+    if (!kind) return NextResponse.json({ error: `Jenis berkas ${f.name} tidak didukung. Gunakan PNG, JPG, WebP, MP4, MOV, WebM, MP3, M4A, atau WAV.` }, { status: 415 });
     if (f.size > FOOTAGE_LIMITS[kind]) return NextResponse.json({ error: `${f.name} melebihi batas ${FOOTAGE_LIMITS[kind] / 1024 / 1024} MB untuk ${kind}.` }, { status: 413 });
   }
 
   const admin = createAdminClient();
   const batch = randomUUID().slice(0, 8);
-  const out: { name: string; path: string; token: string; kind: "gambar" | "video" }[] = [];
+  const out: { name: string; path: string; token: string; kind: "gambar" | "video" | "audio" }[] = [];
   for (const f of parsed.data.files) {
     const path = `${owner}/${batch}/${randomUUID().slice(0, 6)}-${safeName(f.name)}`;
     const { data, error } = await admin.storage.from(BUCKET).createSignedUploadUrl(path);

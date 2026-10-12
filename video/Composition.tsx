@@ -58,6 +58,7 @@ function fit(lines: string[], max: number, min: number) {
 
 function Media({ media, pal }: { media: NonNullable<SpecScene["media"]>; pal: Palette }) {
   const f = useCurrentFrame();
+  if (!media.url) return null;
   const p = interpolate(f, [0, 14], [0, 1], { extrapolateRight: "clamp" });
   const style = { width: "100%", height: "100%", objectFit: "cover" as const };
   return (

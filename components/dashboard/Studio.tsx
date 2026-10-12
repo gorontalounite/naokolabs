@@ -77,9 +77,10 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
   const [rights, setRights] = useState(false);
   const [rightsError, setRightsError] = useState("");
   const [voiceover, setVoiceover] = useState<Voiceover | null>(null);
+  const [voFile, setVoFile] = useState<File | null>(null);
   const [voRights, setVoRights] = useState(false);
   const [voError, setVoError] = useState("");
-  const [music, setMusic] = useState<{ name: string; size: number } | null>(null);
+  const [music, setMusic] = useState<{ name: string; size: number; file: File } | null>(null);
   const [musicError, setMusicError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [progress, setProgress] = useState("");
@@ -119,7 +120,7 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
     if (!file) return;
     if (!file.type.startsWith("audio/") && !/\.(mp3|m4a|wav|aac|ogg)$/i.test(file.name)) return setMusicError("Gunakan file audio MP3, M4A atau WAV.");
     if (file.size > MUSIC_MAX_BYTES) return setMusicError("File musik maksimal 30 MB.");
-    setMusic({ name: file.name, size: file.size });
+    setMusic({ name: file.name, size: file.size, file });
   };
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -154,16 +155,22 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
       // Footage diunggah dulu; bila penyimpanan belum aktif, storyboard tetap dibuat tanpa footage di video.
       let footage: Record<string, StoredFootage> = {};
       let skipped = "";
-      if (valid.length > 0) {
-        setProgress(`Mengunggah footage (0/${valid.length})…`);
-        const up = await uploadFootage(valid.map((a) => ({ key: a.key, file: a.file })), (d, t) => setProgress(`Mengunggah footage (${d}/${t})…`));
+      const toSend = valid.map((a) => ({ key: a.key, file: a.file }));
+      if (useUpload && voFile) toSend.push({ key: "__voice", file: voFile });
+      if (draft.musicMode === "upload" && music) toSend.push({ key: "__music", file: music.file });
+      if (toSend.length > 0) {
+        setProgress(`Mengunggah berkas (0/${toSend.length})…`);
+        const up = await uploadFootage(toSend, (d, t) => setProgress(`Mengunggah berkas (${d}/${t})…`));
         if (up.ok) footage = up.byKey;
-        else if (up.disabled) skipped = "Penyimpanan footage belum aktif, jadi footage belum ikut di video.";
+        else if (up.disabled) skipped = "Penyimpanan berkas belum aktif, jadi footage, voice-over, dan backsound belum ikut di video.";
         else {
           setError(up.error);
           return;
         }
       }
+      const audioFiles = { voice: footage["__voice"]?.path, music: footage["__music"]?.path };
+      delete footage["__voice"];
+      delete footage["__music"];
       setProgress("Menyusun storyboard…");
       const res = await fetch("/api/rencana", {
         method: "POST",
@@ -196,6 +203,7 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
         assetNames: Object.fromEntries(assetList.map((a) => [a.id, a.name])),
         plannerMode: data.mode,
         footage,
+        audioFiles,
         warnings: [...(skipped ? [skipped] : []), ...(data.issues ?? []).map((i: { scene?: number; message: string }) => (i.scene ? `Adegan ${i.scene}: ${i.message}` : i.message))],
       });
       saveLocalVideo(video);
@@ -276,7 +284,7 @@ export function Studio({ presetIdea, reference }: { presetIdea?: string; referen
           </div>
         )}
         {draft.voMode === "upload" && (
-          <VoiceoverUpload value={voiceover} onChange={(v) => { setVoiceover(v); setVoError(""); if (!v) setVoRights(false); }}
+          <VoiceoverUpload value={voiceover} onChange={(v, f) => { setVoiceover(v); setVoFile(v ? (f ?? null) : null); setVoError(""); if (!v) setVoRights(false); }}
             rights={voRights} onRightsChange={(v) => { setVoRights(v); setVoError(""); }} rightsError={voiceover ? voError || undefined : undefined} />
         )}
         {draft.voMode === "upload" && !voiceover && voError && <p className="field-error" role="alert">{voError}</p>}

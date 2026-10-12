@@ -19,6 +19,8 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
   const [revising, setRevising] = useState(false);
   const [brand, setBrand] = useState<Record<string, string>>({});
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [prod, setProd] = useState<{ state: string; message?: string; playUrl?: string; downloadUrl?: string } | null>(null);
+  const [starting, setStarting] = useState(false);
   useEffect(() => {
     try {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage hanya ada setelah hidrasi
@@ -55,10 +57,60 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
     const scenes = state.scenes.map((sc) => {
       const f = sc.assetId ? footage?.[sc.assetId] : undefined;
       const url = f ? urls[f.path] : undefined;
-      return { ...sc, media: f && url ? { url, kind: f.kind } : undefined };
+      return { ...sc, media: f && url && f.kind !== "audio" ? { url, kind: f.kind } : undefined };
     });
-    return buildSpec({ style: video.styleId, title: video.title, scenes, brand, audio: local?.audio });
-  }, [video.styleId, video.title, state.scenes, brand, local?.audio, footage, urls]);
+    return buildSpec({ style: video.styleId, title: video.title, scenes, brand, audio: local?.audio, audioFiles: local?.audioFiles });
+  }, [video.styleId, video.title, state.scenes, brand, local?.audio, local?.audioFiles, footage, urls]);
+  // Produksi sungguhan (P6) hanya untuk video buatan Studio; video contoh tetap simulasi.
+  const startProduction = async () => {
+    setStarting(true);
+    setNote("");
+    try {
+      const jobSpec = buildSpec({
+        style: video.styleId, title: video.title, brand, audio: local?.audio, audioFiles: local?.audioFiles,
+        scenes: state.scenes.map((sc) => {
+          const f = sc.assetId ? footage?.[sc.assetId] : undefined;
+          return { ...sc, media: f && f.kind !== "audio" ? { path: f.path, kind: f.kind } : undefined };
+        }),
+      });
+      const res = await fetch("/api/produksi", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ spec: jobSpec }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return setNote(data.disabled ? "Produksi belum aktif di server ini (perlu pengaturan GitHub dan penyimpanan)." : data.error ?? "Produksi gagal dimulai.");
+      setProd({ state: "antre", message: "Menunggu worker" });
+      update({ status: "produksi", jobId: data.jobId });
+    } catch {
+      setNote("Koneksi terputus. Coba lagi.");
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  const jobId = state.jobId;
+  useEffect(() => {
+    if (!local || !jobId) return;
+    if (status === "produksi") {
+      let live = true;
+      const tick = async () => {
+        try {
+          const r = await fetch(`/api/produksi/${jobId}`);
+          const d = await r.json();
+          if (!live || !r.ok) return;
+          setProd(d);
+          if (d.state === "selesai") update({ status: "hasil" });
+        } catch {
+          // Coba lagi pada putaran berikutnya.
+        }
+      };
+      tick();
+      const t = setInterval(tick, 5000);
+      return () => { live = false; clearInterval(t); };
+    }
+    if ((status === "hasil" || status === "siap" || status === "perbaikan") && !prod?.playUrl) {
+      fetch(`/api/produksi/${jobId}`).then((r) => r.json()).then((d) => d.playUrl && setProd(d)).catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- update dan prod sengaja tidak jadi pemicu
+  }, [local, jobId, status]);
+
   const showPlan = status === "rencana" || status === "produksi";
   const showResult = !showPlan;
 
@@ -118,12 +170,16 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
           {showResult && (
             <section className="panel stack" aria-labelledby="hasil-title">
               <h2 id="hasil-title" className="section-title">Hasil video</h2>
-              <div className="video-frame">
-                <button type="button" aria-label="Putar video" onClick={() => setNote("File video contoh belum tersedia. Pemutar aktif setelah produksi sungguhan tersambung.")}>
-                  <Play size={24} aria-hidden="true" />
-                </button>
-                <small>{duration} detik · 1080×1920</small>
-              </div>
+              {prod?.playUrl ? (
+                <div className="preview-frame"><video src={prod.playUrl} controls playsInline style={{ display: "block", width: "100%", aspectRatio: "9 / 16", background: "#000" }} /></div>
+              ) : (
+                <div className="video-frame">
+                  <button type="button" aria-label="Putar video" onClick={() => setNote(local ? "Memuat video…" : "File video contoh belum tersedia.")}>
+                    <Play size={24} aria-hidden="true" />
+                  </button>
+                  <small>{duration} detik · 1080×1920</small>
+                </div>
+              )}
               <details className="notice">
                 <summary style={{ cursor: "pointer", fontWeight: 700 }}>Caption</summary>
                 <p style={{ marginTop: 8 }}>{state.caption}</p>
@@ -162,9 +218,9 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
             <div className="action-box">
               <h2>Yang perlu Anda lakukan</h2>
               <p className="hint">Periksa storyboard, naskah dan caption. Klik ikon pensil untuk mengubah adegan. Setelah disetujui, video diproduksi dan memakai 1 kuota.</p>
-              <button type="button" className="btn btn-primary btn-block btn-center" disabled={dirty}
-                onClick={() => { update({ status: "produksi" }); setNote(""); }}>
-                <Clapperboard size={18} aria-hidden="true" /> Setujui versi {state.planVersion} & Produksi
+              <button type="button" className="btn btn-primary btn-block btn-center" disabled={dirty || starting}
+                onClick={() => { if (local) startProduction(); else { update({ status: "produksi" }); setNote(""); } }}>
+                {starting ? <LoaderCircle size={18} className="spin" aria-hidden="true" /> : <Clapperboard size={18} aria-hidden="true" />} Setujui versi {state.planVersion} & Produksi
               </button>
               {dirty && <p className="hint">Simpan atau batalkan perubahan dulu sebelum menyetujui.</p>}
               {!askAi ? (
@@ -191,15 +247,33 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
 
           {status === "produksi" && (
             <div className="action-box" style={{ borderColor: "var(--line)" }}>
-              <h2>Video sedang diproduksi</h2>
-              <p className="hint">Anda boleh menutup halaman ini. Kami kabari lewat email saat video siap ditinjau.</p>
-              <ul className="progress-list">
-                <li><CheckCircle2 size={18} color="var(--success)" aria-hidden="true" /> Rencana versi {state.planVersion} disetujui</li>
-                <li><LoaderCircle size={18} color="var(--accent-strong)" aria-hidden="true" /> Membuat suara narasi</li>
-                <li><Circle size={18} color="var(--line-strong)" aria-hidden="true" /> Menyusun adegan & render</li>
-                <li><Circle size={18} color="var(--line-strong)" aria-hidden="true" /> Pemeriksaan kualitas</li>
-              </ul>
-              <button type="button" className="btn btn-block btn-center" onClick={() => update({ status: "hasil" })}>Lihat contoh hasil (pratinjau)</button>
+              <h2>{prod?.state === "gagal" ? "Produksi gagal" : "Video sedang diproduksi"}</h2>
+              {prod?.state === "gagal" ? (
+                <>
+                  <p className="hint">{prod.message ?? "Render berhenti."} Kuota tidak terpakai.</p>
+                  <button type="button" className="btn btn-primary btn-block btn-center" onClick={() => { update({ status: "rencana", jobId: undefined }); setProd(null); }}>Coba lagi</button>
+                </>
+              ) : (
+                <>
+                  <p className="hint">Biasanya 2–4 menit. Halaman ini memperbarui diri; Anda boleh menutupnya dan kembali lewat Riwayat Video.</p>
+                  <ul className="progress-list">
+                    {[
+                      ["antre", "Menunggu worker"],
+                      ["menyiapkan", "Menyiapkan suara dan footage"],
+                      ["render", "Merender video"],
+                      ["mengunggah", "Mengunggah hasil"],
+                    ].map(([id, label], i, all) => {
+                      const cur = all.findIndex(([x]) => x === (prod?.state ?? "antre"));
+                      return (
+                        <li key={id}>
+                          {i < cur ? <CheckCircle2 size={18} color="var(--success)" aria-hidden="true" /> : i === cur ? <LoaderCircle size={18} color="var(--accent-strong)" aria-hidden="true" className="spin" /> : <Circle size={18} color="var(--line-strong)" aria-hidden="true" />} {label}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+              {!local && <button type="button" className="btn btn-block btn-center" onClick={() => update({ status: "hasil" })}>Lihat contoh hasil (pratinjau)</button>}
             </div>
           )}
 
@@ -228,7 +302,11 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
             <div className="action-box">
               <h2>Video siap diunduh</h2>
               <p className="hint">Unduh video lalu posting dari aplikasi Instagram, TikTok atau Facebook bersama caption di bawah.</p>
-              <button type="button" className="btn btn-primary btn-block btn-center" onClick={() => setNote("Unduhan tersedia setelah file video sungguhan ada.")}><Download size={18} aria-hidden="true" /> Unduh MP4</button>
+              {prod?.downloadUrl ? (
+                <a className="btn btn-primary btn-block btn-center" href={prod.downloadUrl} download="video-naokolabs.mp4"><Download size={18} aria-hidden="true" /> Unduh MP4</a>
+              ) : (
+                <button type="button" className="btn btn-primary btn-block btn-center" onClick={() => setNote("File video belum tersedia untuk video contoh.")}><Download size={18} aria-hidden="true" /> Unduh MP4</button>
+              )}
               <button type="button" className="btn btn-block btn-center"
                 onClick={() => navigator.clipboard?.writeText(state.caption).then(() => setNote("Caption tersalin."), () => setNote("Caption tidak bisa disalin otomatis; salin manual dari bagian Caption."))}>
                 <Copy size={18} aria-hidden="true" /> Salin caption

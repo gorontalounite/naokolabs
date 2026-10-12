@@ -1,19 +1,22 @@
 name: render
+run-name: render ${{ inputs.job_id || 'uji' }}
 
-# Merender spesifikasi video (JSON dari storyboard) menjadi MP4 1080x1920 dengan Remotion (D-24).
-# Dua pemicu:
-#  - workflow_dispatch: dipakai aplikasi (spec_b64 = JSON dalam base64). Hanya bisa dipicu setelah file ini ada di branch utama.
+# Merender video jadi MP4 1080x1920 dengan Remotion (D-24).
+# Pemicu:
+#  - workflow_dispatch: dipanggil aplikasi dengan job_id (spesifikasi diambil dari Supabase; tidak ada data pelanggan di input).
+#    File ini harus ada di branch utama; code_ref menentukan branch kode yang dirender.
 #  - push ke branch claude yang mengubah .github/render-test/spec.json: uji render tanpa aplikasi.
 on:
   workflow_dispatch:
     inputs:
-      video_id:
-        description: ID video
+      job_id:
+        description: ID pekerjaan produksi
         required: true
         type: string
-      spec_b64:
-        description: Spesifikasi video (JSON, base64)
-        required: true
+      code_ref:
+        description: Branch kode yang dirender
+        required: false
+        default: main
         type: string
   push:
     branches: [claude]
@@ -23,15 +26,22 @@ permissions:
   contents: read
 
 concurrency:
-  group: render-${{ inputs.video_id || github.ref }}
+  group: render-${{ inputs.job_id || github.ref }}
   cancel-in-progress: false
 
 jobs:
   render:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      JOB_ID: ${{ inputs.job_id }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.code_ref || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -39,29 +49,31 @@ jobs:
       - run: npm ci
       - name: Pasang ffmpeg (ukur durasi suara)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-      - name: Siapkan spesifikasi
-        env:
-          SPEC_B64: ${{ inputs.spec_b64 }}
-          VIDEO_ID: ${{ inputs.video_id || 'uji' }}
+      - name: Ambil spesifikasi
         run: |
           mkdir -p out
-          if [ -n "$SPEC_B64" ]; then
-            printf '%s' "$SPEC_B64" | base64 -d > out/spec.json
+          if [ -n "$JOB_ID" ]; then
+            npx tsx scripts/job.ts get "$JOB_ID" out/spec.json
           else
             cp .github/render-test/spec.json out/spec.json
           fi
-          echo "VIDEO_ID=$VIDEO_ID" >> "$GITHUB_ENV"
           node -e 'const s=JSON.parse(require("fs").readFileSync("out/spec.json","utf8")); if(!Array.isArray(s.scenes)||!s.scenes.length) throw new Error("spesifikasi tanpa adegan")'
       - name: Render MP4
-        env:
-          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-        run: npx tsx scripts/render.ts out/spec.json "out/${VIDEO_ID}.mp4"
-      - name: Periksa hasil
         run: |
-          ffprobe -v error -show_entries format=duration:stream=width,height,codec_name -of compact "out/${VIDEO_ID}.mp4"
+          [ -n "$JOB_ID" ] && npx tsx scripts/job.ts status "$JOB_ID" render "Merender video" || true
+          npx tsx scripts/render.ts out/spec.json out/video.mp4
+      - name: Periksa hasil
+        run: ffprobe -v error -show_entries format=duration:stream=width,height,codec_name -of compact out/video.mp4
+      - name: Unggah hasil
+        if: env.JOB_ID != ''
+        run: npx tsx scripts/job.ts finish "$JOB_ID" out/video.mp4
       - uses: actions/upload-artifact@v4
+        if: env.JOB_ID == ''
         with:
-          name: video-${{ env.VIDEO_ID }}
-          path: out/${{ env.VIDEO_ID }}.mp4
+          name: video-uji
+          path: out/video.mp4
           retention-days: 7
           if-no-files-found: error
+      - name: Tandai gagal
+        if: failure() && env.JOB_ID != ''
+        run: npx tsx scripts/job.ts status "$JOB_ID" gagal "Render gagal. Coba lagi." || true

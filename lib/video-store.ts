@@ -7,6 +7,8 @@ import type { RevisionItem, SampleVideo, Scene, VideoStatus } from "@/lib/video-
 // Penyimpanan sementara di browser selama data akun belum aktif (BUILD-PLAN urutan F).
 export type VideoState = {
   status: VideoStatus;
+  /** Pekerjaan produksi yang sedang berjalan atau terakhir selesai (P6). */
+  jobId?: string;
   planVersion: number;
   scenes: Scene[];
   caption: string;
@@ -66,7 +68,9 @@ export type LocalVideoMeta = SampleVideo & {
   warnings: string[];
   idea?: string;
   /** Footage pelanggan di penyimpanan server: kunci aset → jalur berkas. */
-  footage?: Record<string, { path: string; kind: "gambar" | "video"; name: string }>;
+  footage?: Record<string, { path: string; kind: "gambar" | "video" | "audio"; name: string }>;
+  /** Jalur voice-over dan backsound milik pelanggan di penyimpanan (kunci footage). */
+  audioFiles?: { voice?: string; music?: string };
   /** Pilihan suara dari Studio; dipakai untuk spesifikasi render. */
   audio?: { voMode: "none" | "upload" | "ai"; voice: string; musicMode: "none" | "upload" | "library" };
   /** Voice-over milik pelanggan: narasi dan durasi adegan terkunci mengikuti rekaman. */

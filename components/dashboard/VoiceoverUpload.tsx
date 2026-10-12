@@ -28,7 +28,7 @@ export function VoiceoverUpload({
   rightsError,
 }: {
   value: Voiceover | null;
-  onChange: (v: Voiceover | null) => void;
+  onChange: (v: Voiceover | null, file?: File) => void;
   rights: boolean;
   onRightsChange: (v: boolean) => void;
   rightsError?: string;
@@ -53,7 +53,7 @@ export function VoiceoverUpload({
       const res = await fetch("/api/transkrip", { method: "POST", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) return setError(data.error ?? "Transkripsi gagal. Coba lagi.");
-      onChange(data.voiceover as Voiceover);
+      onChange(data.voiceover as Voiceover, file);
     } catch {
       setError("Koneksi terputus. Periksa internet lalu coba lagi.");
     } finally {

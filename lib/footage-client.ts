@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/config";
 
-export type StoredFootage = { path: string; kind: "gambar" | "video"; name: string };
+export type StoredFootage = { path: string; kind: "gambar" | "video" | "audio"; name: string };
 export type UploadResult = { ok: true; byKey: Record<string, StoredFootage> } | { ok: false; disabled?: boolean; error: string };
 
 type Item = { key: string; file: File };
@@ -22,7 +22,7 @@ export async function uploadFootage(items: Item[], onProgress?: (done: number, t
   const storage = createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: false } }).storage.from("footage");
   const byKey: Record<string, StoredFootage> = {};
   for (let i = 0; i < items.length; i++) {
-    const meta = data.files[i] as { name: string; path: string; token: string; kind: "gambar" | "video" };
+    const meta = data.files[i] as { name: string; path: string; token: string; kind: "gambar" | "video" | "audio" };
     const { error } = await storage.uploadToSignedUrl(meta.path, meta.token, items[i].file, { contentType: items[i].file.type });
     if (error) return { ok: false, error: `Mengunggah ${meta.name} gagal. Periksa koneksi lalu coba lagi.` };
     byKey[items[i].key] = { path: meta.path, kind: meta.kind, name: meta.name };

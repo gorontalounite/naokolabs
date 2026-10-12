@@ -32,6 +32,7 @@ export const BriefSchema = z.object({
 export const PlanSchema = z.object({
   status: z.enum(["ok", "needs_input", "unsupported"]),
   title: z.string(),
+  style: z.enum(["motion-graphic", "explainer"]).describe("Gaya yang Anda pilih sesuai isi ide (D-23)"),
   brief: BriefSchema,
   duration: z.number().describe("Total durasi video dalam detik, ditentukan dari banyaknya isi ide"),
   durationReason: z.string().describe("Satu kalimat alasan durasi untuk ditampilkan ke pelanggan"),
@@ -62,7 +63,7 @@ export const VoiceoverSchema = z.object({
 export const PlanRequestSchema = z.object({
   idea: z.string().trim().max(1000).optional().default(""),
   tone: z.string().max(40),
-  styleId: z.string().max(60),
+  styleId: z.string().max(60).optional().default("auto"),
   exampleId: z.string().max(60).optional(),
   vo: z.boolean(),
   voice: z.string().max(60),

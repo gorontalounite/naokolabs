@@ -19,6 +19,22 @@ Menggantikan urutan tahap 0–13 di bawah untuk prioritas pengerjaan. Isi tiap t
 
 Login (tahap 3 lama) dipindah ke akhir atas keputusan pemilik. Kode login dan migrasi workspace sudah ada; selama pengembangan `/app` dibuka tanpa login dengan data contoh. Cabang carousel di tahap 7–10 menjadi tahap berikutnya setelah video berjalan.
 
+## Tahapan produksi video — 13 Oktober 2026 (D-23)
+
+Urutan D–F di atas diuraikan menjadi tahap P1–P7. Alur Studio: **tulis ide → (opsional) footage, voice-over, backsound → storyboard → setujui → produksi → unduh**. Gaya (Motion Graphic atau Explainer) dipilih planner, bukan pelanggan.
+
+| Tahap | Pekerjaan | Hasil yang bisa diperiksa | Status |
+|---|---|---|---|
+| P1 | Studio tiga langkah; planner memilih gaya; storyboard sebagai panduan | Studio tanpa langkah gaya; `plan.style` terisi | Selesai |
+| P2 | **Komposisi Remotion dari storyboard**: JSON adegan → komponen React (teks kinetik, bentuk, kartu, diagram, footage) per gaya; pratinjau di browser dengan `@remotion/player` | Storyboard tampil sebagai video 1080×1920 tanpa suara di halaman video | Berikutnya |
+| P3 | **Render MP4** di worker: render lokal dulu (Chromium + FFmpeg), lalu pilih tempat render | MP4 dari storyboard contoh, durasi tepat | Menunggu keputusan tempat render |
+| P4 | **Suara**: ElevenLabs TTS per adegan (durasi adegan mengikuti audio), voice-over unggahan, backsound dengan ducking | MP4 bersuara; durasi per adegan cocok dengan audio | Setelah P3 |
+| P5 | **Footage**: unggah ke Supabase Storage, dipakai di komposisi (foto/video dalam kartu/bingkai) | Footage pelanggan tampil di MP4 | Setelah P3, paralel P4 |
+| P6 | **Antrean dan status**: tombol Produksi membuat pekerjaan, progres nyata, hasil bisa diunduh, perbaikan | Dari klik Produksi sampai unduh MP4 | Setelah P4 dan P5 |
+| P7 | Biaya nyata per video (token Claude, karakter ElevenLabs, waktu render) dicatat | Tabel biaya per video, dasar harga paket | Setelah P6 |
+
+Keputusan terbuka: **tempat render** (P3). Pilihan: server sendiri/VPS dengan Docker (biaya tetap, paling sederhana untuk pemakaian pribadi), Remotion Lambda di AWS (bayar per render, perlu akun AWS), atau GitHub Actions (gratis dalam batas, lambat). Rendering tidak bisa berjalan di fungsi Vercel biasa.
+
 ## Stack yang telah diusulkan
 
 Next.js/React + TypeScript untuk web/backend aplikasi; PostgreSQL dengan Supabase sebagai kandidat Auth/Database/Storage; Remotion + FFmpeg pada worker Node/container terpisah untuk render. Workflow/queue dan hosting belum dikunci. Tidak ada keputusan pengguna sebelumnya yang menetapkan versi paket atau semua vendor final.

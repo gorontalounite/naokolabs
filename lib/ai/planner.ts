@@ -121,6 +121,11 @@ const GOAL: Record<string, string> = {
   formal: "Penonton menerima informasi resmi dengan jelas",
 };
 
+// Mode contoh memilih gaya dengan kata kunci sederhana; mode AI memilih sendiri.
+export function detectStyle(text: string): "motion-graphic" | "explainer" {
+  return /\b(cara|langkah|bagaimana|kenapa|mengapa|alasan|proses|bekerja|tahap|perbedaan|vs|tips)\b/i.test(text) ? "explainer" : "motion-graphic";
+}
+
 export function samplePlan(req: PlanRequest): Plan {
   if (req.voiceover) return sampleFromVoiceover(req, req.voiceover);
   const idea = readIdea(req.idea);
@@ -179,6 +184,7 @@ export function samplePlan(req: PlanRequest): Plan {
   return {
     status: "ok",
     title: brand ? `${brand}: ${idea.headline}` : cap(idea.headline),
+    style: detectStyle(req.idea),
     brief: {
       goal: GOAL[req.tone] ?? GOAL.promosi,
       audience: `Pengikut ${handle || "akun brand"} dan calon pelanggan yang tertarik dengan ${idea.topic}`,
@@ -243,6 +249,7 @@ function sampleFromVoiceover(req: PlanRequest, vo: Voiceover): Plan {
   return {
     status: "ok",
     title: brand ? `${brand}: ${headline}` : cap(headline),
+    style: detectStyle(`${req.idea} ${vo.transcript}`),
     brief: {
       goal: GOAL[req.tone] ?? GOAL.promosi,
       audience: `Pengikut ${handle || "akun brand"} dan calon pelanggan`,

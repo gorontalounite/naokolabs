@@ -3,19 +3,23 @@ import type { PlanRequest } from "../schema";
 import { GLOBAL_RULES } from "./global";
 import { PLANNER_STAGE } from "./planner";
 import { examplePrompt } from "./references";
-import { stylePrompt } from "./styles/index";
+import { STYLE_CHOICE, STYLE_PROMPTS, stylePrompt } from "./styles/index";
 import { TONE_GUIDE } from "./tones";
 
 // Susunan prompt: [aturan global + tahap] → [system prompt gaya] → [arahan contoh video] → pesan pengguna berisi data.
 // Bagian stabil di depan dengan penanda cache, data klien di belakang (prompt caching = prefix match).
 export function buildPlannerPrompt(req: PlanRequest) {
+  // Pelanggan tidak memilih gaya (D-23): planner memilih. Acuan dari Katalog menentukan gayanya.
+  const example = examplePrompt(req.exampleId);
+  const refStyle = example?.match(/style="([^"]+)"/)?.[1];
+  const fixed = refStyle && STYLE_PROMPTS[refStyle] ? refStyle : STYLE_PROMPTS[req.styleId] ? req.styleId : null;
   const system: Anthropic.TextBlockParam[] = [
     { type: "text", text: `${GLOBAL_RULES}\n\n${PLANNER_STAGE}`, cache_control: { type: "ephemeral" } },
-    { type: "text", text: stylePrompt(req.styleId), cache_control: { type: "ephemeral" } },
+    fixed
+      ? { type: "text", text: `Gaya yang dipakai: ${fixed}. Isi field style dengan "${fixed}".\n\n${stylePrompt(fixed)}`, cache_control: { type: "ephemeral" } }
+      : { type: "text", text: `${STYLE_CHOICE}\n\n${Object.values(STYLE_PROMPTS).join("\n\n")}`, cache_control: { type: "ephemeral" } },
   ];
-  // Contoh video hanya berlaku untuk gaya yang sama.
-  const example = examplePrompt(req.exampleId);
-  if (example && example.includes(`style="${req.styleId}"`)) {
+  if (example) {
     system.push({ type: "text", text: `Pelanggan memilih video contoh berikut sebagai acuan tampilan dan ritme. Ikuti arahannya, tetapi isi dan fakta tetap dari ide dan brand kit pelanggan.\n${example}`, cache_control: { type: "ephemeral" } });
   }
 

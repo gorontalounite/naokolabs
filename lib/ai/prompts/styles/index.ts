@@ -8,6 +8,12 @@ export const STYLE_PROMPTS: Record<string, string> = {
   explainer: EXPLAINER,
 };
 
+// Aturan memilih gaya bila pelanggan tidak memilih (D-23).
+export const STYLE_CHOICE = `Pelanggan tidak memilih gaya video; Anda yang memilih satu dan mengisinya di field style.
+- explainer: ide menjelaskan proses, cara kerja, langkah berurutan, sebab-akibat, perbandingan, atau data.
+- motion-graphic: ide berupa promo, pengumuman, ucapan, ajakan, atau pesan singkat.
+Ikuti HANYA system prompt gaya yang Anda pilih; abaikan yang lain. Sebut alasan pilihan di concept.`;
+
 export function stylePrompt(styleId: string) {
   return STYLE_PROMPTS[styleId] ?? STYLE_PROMPTS["motion-graphic"];
 }

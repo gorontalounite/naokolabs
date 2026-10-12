@@ -54,7 +54,7 @@ export const voices = [
 export type VideoStatus = "rencana" | "produksi" | "hasil" | "perbaikan" | "siap";
 
 export const statusInfo: Record<VideoStatus, { label: string; step: number; action: string | null }> = {
-  rencana: { label: "Menunggu persetujuan brief & storyboard", step: 1, action: "Tinjau rencana" },
+  rencana: { label: "Menunggu persetujuan storyboard", step: 1, action: "Tinjau rencana" },
   produksi: { label: "Sedang diproduksi", step: 2, action: null },
   hasil: { label: "Menunggu persetujuan hasil", step: 3, action: "Tinjau hasil" },
   perbaikan: { label: "Perbaikan sedang dikerjakan", step: 3, action: null },

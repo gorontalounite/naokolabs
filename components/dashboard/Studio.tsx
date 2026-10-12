@@ -1,15 +1,13 @@
 "use client";
 
-import { Check, FileAudio, LoaderCircle, Trash2, Wand2, X } from "lucide-react";
-import Link from "next/link";
+import { FileAudio, LoaderCircle, Trash2, Wand2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { AssetPicker, type PickedAsset } from "@/components/dashboard/AssetPicker";
-import { StylePreview } from "@/components/dashboard/StylePreview";
 import { VoiceoverUpload } from "@/components/dashboard/VoiceoverUpload";
 import type { Plan, Voiceover } from "@/lib/ai/schema";
 import { planToVideo } from "@/lib/plan-to-video";
-import { tones, voices, type VideoStyle } from "@/lib/video-data";
+import { tones, voices } from "@/lib/video-data";
 import { saveLocalVideo } from "@/lib/video-store";
 
 const STORAGE_KEY = "naokolabs:studio-draft";
@@ -20,18 +18,16 @@ const ideaExamples = ["3 alasan kopi lokal lebih segar", "Promo pembukaan cabang
 // Default tanpa suara dan tanpa musik: dashboard hanya menambahkan bila pengguna memintanya (D-22).
 type VoMode = "none" | "upload" | "ai";
 type MusicMode = "none" | "upload" | "library";
-type Draft = { idea: string; tone: string; styleId: string; voMode: VoMode; voice: string; musicMode: MusicMode };
+type Draft = { idea: string; tone: string; voMode: VoMode; voice: string; musicMode: MusicMode };
 
 export type StudioReference = { id: string; title: string; file: string; style: string };
-export type StudioSample = StudioReference & { thumbnail: string };
 
-const initialDraft: Draft = { idea: "", tone: "promosi", styleId: "motion-graphic", voMode: "none", voice: voices[0].id, musicMode: "none" };
+const initialDraft: Draft = { idea: "", tone: "promosi", voMode: "none", voice: voices[0].id, musicMode: "none" };
 
 function pickDraft(raw: Partial<Draft>): Draft {
   const d = { ...initialDraft };
   if (typeof raw.idea === "string") d.idea = raw.idea.slice(0, IDEA_MAX);
   if (tones.some((t) => t.id === raw.tone)) d.tone = raw.tone!;
-  if (typeof raw.styleId === "string") d.styleId = raw.styleId;
   if (raw.voMode === "ai" || raw.voMode === "upload" || raw.voMode === "none") d.voMode = raw.voMode;
   if (voices.some((v) => v.id === raw.voice)) d.voice = raw.voice!;
   if (raw.musicMode === "none" || raw.musicMode === "upload" || raw.musicMode === "library") d.musicMode = raw.musicMode;
@@ -54,20 +50,6 @@ function Step({ no, title, desc, children, id }: { no: number; title: string; de
   );
 }
 
-function SampleThumb({ sample, pressed, onClick }: { sample: StudioSample; pressed: boolean; onClick: () => void }) {
-  const [broken, setBroken] = useState(false);
-  return (
-    <button type="button" className="sample" aria-pressed={pressed} onClick={onClick} title={sample.file}>
-      {broken ? <StylePreview styleId={sample.style} /> : (
-        // eslint-disable-next-line @next/next/no-img-element -- thumbnail dari Google Drive
-        <img src={sample.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} />
-      )}
-      <span className="sample-name">{sample.title}</span>
-      {pressed && <span className="style-option-check" style={{ display: "grid" }} aria-hidden="true"><Check size={14} /></span>}
-    </button>
-  );
-}
-
 function Choice<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { id: T; title: string; text: string }[]; onChange: (v: T) => void }) {
   return (
     <fieldset className="fieldset stack-s">
@@ -84,10 +66,7 @@ function Choice<T extends string>({ label, value, options, onChange }: { label: 
   );
 }
 
-export function Studio({ styles, presetStyle, presetIdea, reference, samples = {}, sampleTotals = {} }: {
-  styles: VideoStyle[]; presetStyle?: string; presetIdea?: string; reference?: StudioReference | null;
-  samples?: Record<string, StudioSample[]>; sampleTotals?: Record<string, number>;
-}) {
+export function Studio({ presetIdea, reference }: { presetIdea?: string; reference?: StudioReference | null }) {
   const router = useRouter();
   const musicInputId = useId();
   const [draft, setDraft] = useState<Draft>(initialDraft);
@@ -113,14 +92,11 @@ export function Studio({ styles, presetStyle, presetIdea, reference, samples = {
     } catch {
       // Storage diblokir atau draf rusak: mulai dari awal.
     }
-    if (!styles.some((s) => s.id === next.styleId)) next = { ...next, styleId: styles[0]?.id ?? initialDraft.styleId };
-    if (presetStyle && styles.some((s) => s.id === presetStyle)) next = { ...next, styleId: presetStyle };
-    if (reference && styles.some((s) => s.id === reference.style)) next = { ...next, styleId: reference.style };
     if (presetIdea) next = { ...next, idea: presetIdea.slice(0, IDEA_MAX) };
     // eslint-disable-next-line react-hooks/set-state-in-effect -- memulihkan draf setelah hidrasi
     setDraft(next);
     loaded.current = true;
-  }, [presetStyle, presetIdea, reference, styles]);
+  }, [presetIdea]);
 
   useEffect(() => {
     if (!loaded.current) return;
@@ -179,8 +155,7 @@ export function Studio({ styles, presetStyle, presetIdea, reference, samples = {
         body: JSON.stringify({
           idea: draft.idea.trim(),
           tone: draft.tone,
-          styleId: draft.styleId,
-          exampleId: ref && ref.style === draft.styleId ? ref.id : undefined,
+          exampleId: ref ? ref.id : undefined,
           vo: draft.voMode !== "none",
           voice: draft.voice,
           voiceover: useUpload ? voiceover : undefined,
@@ -197,8 +172,7 @@ export function Studio({ styles, presetStyle, presetIdea, reference, samples = {
       }
       const video = planToVideo(data.plan as Plan, {
         tone: draft.tone,
-        styleId: draft.styleId,
-        exampleTitle: ref && ref.style === draft.styleId ? ref.title : undefined,
+        exampleTitle: ref ? ref.title : undefined,
         brand: brand.name ?? "",
         idea: draft.idea.trim(),
         voiceover: useUpload && voiceover ? { fileName: voiceover.fileName, seconds: voiceover.seconds } : undefined,
@@ -217,10 +191,10 @@ export function Studio({ styles, presetStyle, presetIdea, reference, samples = {
 
   return (
     <form onSubmit={submit} noValidate className="stack">
-      <Step no={1} title={draft.voMode === "upload" ? "Tulis ide video (opsional)" : "Tulis ide video Anda"}
+      <Step no={1} title="Tulis ide video Anda"
         desc={draft.voMode === "upload"
-          ? "Anda memakai voice-over sendiri: brief dan durasi mengikuti rekaman. Ide di sini hanya konteks tambahan."
-          : "Satu atau dua kalimat cukup. Kami ubah menjadi brief konten dan storyboard; durasi menyesuaikan isi ide."}>
+          ? "Anda memakai voice-over sendiri, jadi ide ini hanya konteks tambahan dan boleh dikosongkan."
+          : "Satu atau dua kalimat cukup. Dari ide ini kami susun storyboard (urutan adegan, teks, dan gerak) sebagai panduan membuat video. Durasi mengikuti isi ide."}>
         <div className="field">
           <label className="sr-only" htmlFor="idea">Ide video</label>
           <textarea id="idea" ref={ideaRef} className="textarea idea-input" maxLength={IDEA_MAX}
@@ -252,39 +226,14 @@ export function Studio({ styles, presetStyle, presetIdea, reference, samples = {
         </fieldset>
       </Step>
 
-      <Step no={2} title="Pilih gaya video">
-        <div className="style-grid style-grid-2" role="group" aria-label="Gaya video">
-          {styles.map((s) => (
-            <button key={s.id} type="button" className="style-option" aria-pressed={draft.styleId === s.id} onClick={() => set("styleId", s.id)}>
-              <span className="style-option-check" aria-hidden="true"><Check size={14} /></span>
-              <StylePreview styleId={s.id} />
-              <span className="style-option-name">{s.name}</span>
-            </button>
-          ))}
+      {ref && (
+        <div className="ref-chip" role="status">
+          <span>Acuan tampilan dari Katalog: <strong>{ref.title}</strong> <span className="hint">({ref.file})</span></span>
+          <button type="button" className="icon-btn" aria-label="Hapus acuan" onClick={() => setRef(null)}><X size={16} aria-hidden="true" /></button>
         </div>
-        {(samples[draft.styleId]?.length ?? 0) > 0 && (
-          <div className="stack-s">
-            <span className="eyebrow">Pilih contoh sebagai acuan (opsional)</span>
-            <div className="sample-strip" role="group" aria-label="Contoh video">
-              {samples[draft.styleId].map((smp) => (
-                <SampleThumb key={smp.id} sample={smp} pressed={ref?.id === smp.id} onClick={() => setRef(ref?.id === smp.id ? null : smp)} />
-              ))}
-              <Link href={`/app/gaya?gaya=${draft.styleId}`} className="sample-more">
-                <span>Lihat semua</span>
-                <small>{sampleTotals[draft.styleId] ?? 0} contoh</small>
-              </Link>
-            </div>
-          </div>
-        )}
-        {ref && (
-          <div className="ref-chip" role="status">
-            <span>Acuan: <strong>{ref.title}</strong> <span className="hint">({ref.file})</span>{ref.style !== draft.styleId && <span className="hint"> · tidak dipakai karena gayanya berbeda</span>}</span>
-            <button type="button" className="icon-btn" aria-label="Hapus acuan" onClick={() => setRef(null)}><X size={16} aria-hidden="true" /></button>
-          </div>
-        )}
-      </Step>
+      )}
 
-      <Step no={3} id="footage" title="Footage (opsional)" desc="Foto atau video Anda. Tanpa footage, video dibuat dari tipografi, bentuk dan ikon.">
+      <Step no={2} id="footage" title="Footage (opsional)" desc="Foto atau video Anda. Tanpa footage, video dibuat dari tipografi, bentuk dan ikon.">
         <AssetPicker
           assets={assets}
           onChange={(next) => setAssets(next)}
@@ -294,7 +243,7 @@ export function Studio({ styles, presetStyle, presetIdea, reference, samples = {
         />
       </Step>
 
-      <Step no={4} id="suara" title="Voice-over & backsound (opsional)" desc="Tanpa pilihan di sini, video dibuat tanpa suara narasi dan tanpa musik.">
+      <Step no={3} id="suara" title="Voice-over & backsound (opsional)" desc="Tanpa pilihan di sini, video dibuat tanpa suara narasi dan tanpa musik.">
         <Choice label="Voice-over" value={draft.voMode} onChange={(v) => { set("voMode", v); setVoError(""); }} options={[
           { id: "none", title: "Tanpa suara", text: "Pesan dibawa teks di layar" },
           { id: "upload", title: "Unggah voice-over", text: "Rekaman narasi yang sudah jadi" },
@@ -340,7 +289,7 @@ export function Studio({ styles, presetStyle, presetIdea, reference, samples = {
       </Step>
 
       <button type="submit" className="btn btn-primary btn-xl" disabled={submitting} aria-busy={submitting}>
-        {submitting ? <><LoaderCircle size={20} aria-hidden="true" className="spin" /> Menyusun brief & storyboard…</> : <><Wand2 size={20} aria-hidden="true" /> Buat Brief & Storyboard</>}
+        {submitting ? <><LoaderCircle size={20} aria-hidden="true" className="spin" /> Menyusun storyboard…</> : <><Wand2 size={20} aria-hidden="true" /> Buat Storyboard</>}
       </button>
       <p className="hint" style={{ textAlign: "center" }}>
         Gratis dan bisa diedit. Kuota baru terpakai saat Anda menyetujui dan klik &ldquo;Produksi&rdquo;.

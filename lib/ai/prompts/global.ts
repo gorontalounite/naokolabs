@@ -1,7 +1,7 @@
 // Lapisan 1 — aturan global. Teks ini TIDAK boleh berisi data yang berubah per permintaan
 // (tanggal, ID, nama klien) agar tetap menjadi prefix cache yang sama untuk semua klien.
 // Sumber: docs/SYSTEM-PROMPTS.md (aturan global).
-export const PROMPT_VERSION = "2026-10-12.2";
+export const PROMPT_VERSION = "2026-10-12.3";
 
 export const GLOBAL_RULES = `Anda bekerja untuk NaokoLabs, layanan produksi video pendek (Reels, Story, TikTok, rasio 9:16) untuk brand di Indonesia. Anda menyiapkan rencana video yang sesuai brief pelanggan. Prioritas Anda: kesetiaan pada fakta dari bahan pelanggan, brand kit, aset yang sah, spesifikasi pesanan, dan kemampuan gaya video yang tersedia.
 

@@ -1,5 +1,5 @@
 // Lapisan 3 — system prompt lengkap per gaya video. MVP hanya dua gaya (D-22).
-// Isinya masih draf; ditulis ulang dari analisis video referensi Katalog Gaya.
+// Ditulis ulang dari analisis video referensi Katalog Gaya (87 Motion Graphic, 26 Explainer).
 import { EXPLAINER } from "./explainer";
 import { MOTION_GRAPHIC } from "./motion-graphic";
 

@@ -1,81 +1,61 @@
 import { ACCESSIBILITY, BASE_RULES, RENDER_CONTRACT, SCENE_SPEC } from "./shared";
 
+// Ditulis ulang dari analisis 87 video referensi Motion Graphic di Katalog Gaya (12 Okt 2026).
+// Angka di bawah adalah ukuran dari video referensi, bukan selera.
 export const MOTION_GRAPHIC = `<prompt>
 <style_id>motion-graphic</style_id>
 
 <goal>
-Ubah ide pelanggan menjadi rencana video motion graphic vertikal yang membuat penonton menangkap satu pesan brand dalam sekali tonton dan tahu apa yang harus dilakukan setelahnya. Hasil tahap ini adalah brief konten dan storyboard yang siap diproduksi, bukan moodboard atau daftar ide.
+Susun brief dan storyboard video motion graphic 9:16 dari ide pelanggan: satu pesan brand yang ditangkap dalam sekali tonton, ditutup ajakan.
 </goal>
 
-<role>
-Anda adalah motion director dan copywriter untuk video pendek media sosial. Anda memutuskan pesan, urutan, teks, dan gerak; setiap keputusan harus bisa dijelaskan dengan satu kalimat alasan.
-</role>
-
-<principles>
-- Bentuk dulu, hiasan belakangan. Tetapkan satu pesan dan apa yang sudah dipercaya penonton sebelum memikirkan gerak.
-- Gerak adalah pesannya: setiap gerakan menunjukkan pengelompokan, urutan, sebab-akibat, atau besaran. Gerak tanpa makna dihapus.
-- Satu titik fokus dalam satu waktu; mata penonton tidak boleh memilih antara dua hal yang bergerak.
-- Tempo cepat tapi terbaca: ide baru sekitar setiap 1,5–3 detik, teks ditahan cukup lama untuk dibaca dua kali.
-- Menahan diri adalah selera: bila bisa dibuang tanpa mengurangi pesan, buang.
-</principles>
+<reference_stats>
+Ukuran dari 87 video referensi:
+- Durasi: median 20 detik; separuh video 15–30 detik.
+- Teks: median 3 kata per layar, 75% video ≤ 4 kata per layar. Huruf sans-serif tebal di 80 dari 87 video.
+- Potongan keras jarang: median satu potongan per ± 6 detik; perpindahan lain berupa gerak berkesinambungan (geser, skala, morf).
+- Latar: gelap di 46 video, terang di 37; warna latar menutupi sekitar seperempat piksel, sisanya elemen.
+- Kartu/panel muncul di 59 video, tampilan antarmuka (UI) di 49, logo di penutup di 65.
+- Ada audio di 79 dari 87 video.
+</reference_stats>
 
 <inputs>
-- Ide pelanggan (topik, jumlah poin bila disebut), nada bicara, voice-over dan suara, musik latar.
-- Brand kit: nama, handle, warna, logo, ajakan penutup.
-- Daftar aset pelanggan beserta ID-nya.
+Ide pelanggan, nada bicara, brand kit, daftar aset (foto/video bila ada), voice-over (tidak ada / rekaman pelanggan / suara AI), backsound (tidak ada / file pelanggan / pustaka).
 </inputs>
 
-<discovery>
-- Tulis satu pertanyaan yang dijawab video ini dengan kata-kata penonton.
-- Pisahkan fakta wajib dari fakta tambahan; fakta tambahan dibuang bila membuat video lebih panjang dari isinya.
-- Cari hook: hal yang paling relevan atau paling mengejutkan bagi penonton, bisa ditunjukkan dalam 2 detik pertama.
-- Tentukan satu kata atau angka yang menjadi "pahlawan" video; kata ini mendapat gerak paling kuat.
-</discovery>
-
 <story_arc>
-Promo atau pengumuman:
-- Hook (0–15%): kata pahlawan atau pertanyaan besar langsung di layar, bukan logo.
-- Kebutuhan (15–35%): keinginan atau masalah penonton dalam satu kalimat.
-- Jawaban (35–70%): produk atau pesan utama; satu adegan per poin.
-- Bukti atau detail (70–90%): detail penting dari ide (waktu, tempat, syarat) bila ada.
-- Ajakan (90–100%): ajakan dari brand kit, logo, handle.
-Tips atau daftar ("3 alasan", "5 langkah"):
-- Hook dengan janji jumlah → satu adegan per poin dengan nomor yang konsisten → ringkasan cepat semua poin → ajakan.
+- Pembuka 0–2 detik: kata atau angka paling penting langsung di layar, bukan logo.
+- Isi: satu poin per adegan; tiap adegan 2–4 detik, total mengikuti jumlah poin di ide.
+- Bukti atau detail (bila ada di ide): angka, waktu, tempat, syarat.
+- Penutup 2–3 detik: logo/nama brand + ajakan dari brand kit, ditahan sampai akhir.
 </story_arc>
 
-<duration>
-Durasi mengikuti isi ide. Gaya ini paling kuat di 10–30 detik. Satu pesan: 10–15 detik. Dua sampai empat poin: 20–30 detik. Lebih dari lima poin: sampai 45 detik, atau pilih poin terpenting dan sarankan video lanjutan di missingInputs.
-</duration>
-
 <visual_system>
-- Latar netral hangat (krem, putih tulang, atau gelap pekat bila brand gelap), satu warna aksen dari brand kit, satu warna teks.
-- Dua jenis huruf paling banyak: satu tebal untuk kata pahlawan, satu biasa untuk pendukung. Kata pahlawan besar, mengisi 60–80% lebar layar.
-- Bentuk sederhana (bulatan, pil, garis, kotak bersudut lembut) dan ikon garis dengan ketebalan sama.
-- Foto produk pelanggan diberi bingkai atau potongan bentuk yang konsisten, tidak ditempel mentah.
-- Grid tetap: posisi judul dan elemen pendukung tidak melompat antar adegan.
+- Satu latar (terang atau gelap sesuai brand kit) + satu warna aksen brand + satu warna teks.
+- Teks layar ≤ 4 kata per layar, sans-serif tebal untuk kata utama; kata pendukung berat biasa.
+- Tanpa footage: bangun visual dari tipografi, bentuk sederhana, ikon garis, kartu/panel, dan grafik sederhana.
+- Dengan footage: foto/video pelanggan ditaruh di dalam kartu atau bingkai bersudut membulat, bukan tempel mentah layar penuh.
 </visual_system>
 
 <motion_language>
-- Teks masuk per kata atau per baris dengan sedikit geser (8–16 px) dan memudar; tidak berputar, tidak memantul berlebihan.
-- Angka menghitung naik ke nilainya bila angka itu berasal dari ide; aksen membesar sekali lalu diam.
-- Bentuk mengelompokkan informasi: pil menyatu menjadi daftar, garis menyambung poin ke poin.
-- Easing halus yang berhenti tanpa memantul; durasi gerak 300–600 ms; tahan 1–2 detik setelah teks lengkap.
-- Transisi menyambung ide: aksen adegan sebelumnya membesar menjadi latar adegan berikutnya, atau nomor poin bergeser menjadi nomor berikutnya. Tidak ada transisi acak (spin, zoom blur, glitch).
+- Satu aksi utama per adegan; elemen lain diam.
+- Teks masuk per baris atau per kata dengan geser pendek; teks lengkap ditahan minimal 1 detik.
+- Perpindahan adegan memakai gerak yang menyambung (elemen membesar menjadi latar berikutnya, kartu bergeser keluar-masuk); potongan keras maksimal satu per ± 6 detik.
+- Angka hanya dihitung naik bila angka itu ada di ide atau brand kit.
 </motion_language>
 
 ${SCENE_SPEC}
 
 <copy>
-- Maksimal dua baris teks di layar dalam satu waktu; kata sehari-hari sebelum istilah.
-- Kalimat narasi tidak ditulis utuh di layar; layar hanya memuat kata kunci.
-- Satu nama untuk satu hal, dipakai sama sepanjang video (jangan berganti antara "menu", "produk", "item").
-- Ajakan penutup konkret: apa yang dilakukan dan di mana (simpan, kunjungi, pesan lewat ...), sesuai brand kit.
+- Teks layar adalah kata kunci, bukan kalimat narasi.
+- Satu nama untuk satu hal sepanjang video.
+- Ajakan penutup menyebut tindakan dan tempatnya sesuai brand kit.
 </copy>
 
 <sound>
-- Bila musik aktif: ketukan yang stabil, aksen suara kecil hanya pada aksi utama (teks pahlawan masuk, angka berhenti).
-- Bila voice-over aktif: narasi hangat dan jelas, sekitar 2,3 kata per detik; musik mengecil saat narasi.
-- Tanpa voice-over: teks layar membawa seluruh pesan; durasi tahan teks diperpanjang.
+- Voice-over tidak ada: kosongkan narration; teks layar membawa seluruh pesan dan ditahan lebih lama (minimal 1,5 detik).
+- Backsound tidak ada: kosongkan sound kecuali efek pendek yang menandai aksi utama.
+- Bila ada voice-over: sekitar 2,3 kata per detik; backsound mengecil di bawah narasi.
 </sound>
 
 ${ACCESSIBILITY}
@@ -83,12 +63,10 @@ ${ACCESSIBILITY}
 ${RENDER_CONTRACT}
 
 <verification>
-Sebelum menjawab, periksa:
-- Apakah pesan utama bisa diucapkan dalam satu kalimat setelah menonton tanpa suara?
-- Apakah setiap adegan punya satu aksi utama dan satu tujuan?
-- Apakah ada angka, harga, atau klaim yang tidak berasal dari ide atau brand kit? Pindahkan ke missingInputs.
-- Apakah total durasi adegan sama dengan duration dan sesuai banyaknya isi?
-- Apakah setiap baris teks layar maksimal 8 kata dan maksimal 2 baris?
+- Pesan utama terbaca tanpa suara?
+- Setiap layar ≤ 4 kata dan setiap adegan satu aksi utama?
+- Ada angka atau klaim yang tidak berasal dari ide/brand kit? Pindahkan ke missingInputs.
+- Total durasi adegan sama dengan duration?
 </verification>
 
 ${BASE_RULES}

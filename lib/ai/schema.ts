@@ -20,35 +20,42 @@ export const PlanSceneSchema = z.object({
   assetId: z.string().nullable().describe("ID aset klien yang dipakai, atau null bila placeholder"),
 });
 
+export const BriefSchema = z.object({
+  goal: z.string().describe("Tujuan video: apa yang diharapkan terjadi setelah ditonton"),
+  audience: z.string().describe("Siapa penontonnya dan apa yang mereka pedulikan"),
+  keyMessage: z.string().describe("Satu pesan utama yang harus diingat penonton"),
+  angle: z.string().describe("Sudut penyampaian yang membuat ide ini menarik"),
+  points: z.array(z.string()).describe("Poin isi berurutan yang dibahas, tanpa poin tambahan yang tidak perlu"),
+  cta: z.string().describe("Ajakan di akhir video"),
+});
+
 export const PlanSchema = z.object({
   status: z.enum(["ok", "needs_input", "unsupported"]),
   title: z.string(),
+  brief: BriefSchema,
+  duration: z.number().describe("Total durasi video dalam detik, ditentukan dari banyaknya isi ide"),
+  durationReason: z.string().describe("Satu kalimat alasan durasi untuk ditampilkan ke pelanggan"),
   concept: z.string().describe("Satu kalimat ide utama"),
   hook: z.string().describe("Kalimat pembuka yang menahan penonton"),
   scenes: z.array(PlanSceneSchema),
   caption: z.string(),
   hashtags: z.array(z.string()),
   missingInputs: z.array(z.string()).describe("Informasi yang kurang dari klien"),
-  sourcesUsed: z.array(z.string()).describe("Fakta dari bahan klien yang dipakai, untuk pemeriksaan"),
+  sourcesUsed: z.array(z.string()).describe("Fakta dari ide atau brand kit pelanggan yang dipakai, untuk pemeriksaan"),
 });
 
 export type Plan = z.infer<typeof PlanSchema>;
 export type PlanScene = z.infer<typeof PlanSceneSchema>;
+export type Brief = z.infer<typeof BriefSchema>;
 
-// Permintaan dari Studio ke server.
+// Permintaan dari Studio ke server. Hanya ide singkat; durasi ditentukan planner (D-18).
 export const PlanRequestSchema = z.object({
-  mode: z.enum(["link", "naskah", "ide"]),
-  link: z.string().max(2000).optional().default(""),
-  script: z.string().max(8000).optional().default(""),
-  idea: z.string().max(500).optional().default(""),
-  pastedText: z.string().max(8000).optional().default(""),
-  duration: z.union([z.literal(15), z.literal(30), z.literal(60)]),
+  idea: z.string().trim().min(5).max(1000),
   tone: z.string().max(40),
   styleId: z.string().max(60),
   vo: z.boolean(),
   voice: z.string().max(60),
   music: z.boolean(),
-  subtitles: z.boolean(),
   brand: z
     .object({ name: z.string().max(120), handle: z.string().max(60), tagline: z.string().max(200) })
     .partial()

@@ -2,7 +2,7 @@
 
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2, TriangleAlert } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { countWords, readingSeconds, type Scene } from "@/lib/video-data";
+import { countWords, MAX_VIDEO_SECONDS, readingSeconds, type Scene } from "@/lib/video-data";
 
 type Tab = "storyboard" | "naskah" | "caption";
 
@@ -17,7 +17,6 @@ export function PlanEditor({
   scenes,
   caption,
   version,
-  duration,
   editable,
   onSave,
   onDirtyChange,
@@ -25,7 +24,6 @@ export function PlanEditor({
   scenes: Scene[];
   caption: string;
   version: number;
-  duration: number;
   editable: boolean;
   onSave: (scenes: Scene[], caption: string) => void;
   onDirtyChange: (dirty: boolean) => void;
@@ -49,7 +47,8 @@ export function PlanEditor({
 
   const total = draft.reduce((sum, s) => sum + s.seconds, 0);
   const spoken = draft.reduce((sum, s) => sum + readingSeconds(s.narration), 0);
-  const overDuration = Math.max(total, spoken) > duration + 2;
+  const tooLong = total > MAX_VIDEO_SECONDS;
+  const narrationOver = spoken > total + 2;
 
   const patch = (id: string, value: Partial<Scene>) => setDraft((list) => list.map((s) => (s.id === id ? { ...s, ...value } : s)));
   const move = (index: number, dir: -1 | 1) =>
@@ -71,7 +70,7 @@ export function PlanEditor({
     <section className="panel" aria-labelledby="rencana-title">
       <div className="section-head">
         <h2 id="rencana-title" className="section-title">Rencana versi {version}{dirty && <span className="badge badge-warning">Belum disimpan</span>}</h2>
-        <span className="badge">± {total} detik · perkiraan</span>
+        <span className="badge">± {total} detik · mengikuti adegan</span>
       </div>
 
       <div className="segment" role="tablist" aria-label="Bagian rencana" style={{ marginBottom: 16 }}>
@@ -82,10 +81,12 @@ export function PlanEditor({
         ))}
       </div>
 
-      {overDuration && (
+      {(tooLong || narrationOver) && (
         <p className="notice notice-warning row" role="status" style={{ marginBottom: 14 }}>
           <TriangleAlert size={18} aria-hidden="true" />
-          Perkiraan {Math.max(total, spoken)} detik, lebih panjang dari durasi {duration} detik. Ringkas narasi atau hapus adegan; naskah yang disetujui tidak akan dipotong otomatis.
+          {tooLong
+            ? `Total ${total} detik, melebihi batas ${MAX_VIDEO_SECONDS} detik per video. Hapus atau persingkat adegan.`
+            : `Narasi butuh ± ${spoken} detik, adegan hanya ${total} detik. Ringkas narasi atau tambah durasi adegan; naskah yang disetujui tidak dipotong otomatis.`}
         </p>
       )}
 

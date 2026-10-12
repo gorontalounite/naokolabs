@@ -2,7 +2,6 @@
 
 import {
   BookOpen,
-  CalendarDays,
   Clapperboard,
   History,
   Lightbulb,
@@ -22,7 +21,6 @@ const icons: Record<NavIcon, LucideIcon> = {
   ide: Lightbulb,
   gaya: Palette,
   riwayat: History,
-  jadwal: CalendarDays,
   panduan: BookOpen,
   paket: Sparkles,
   pengaturan: Settings,

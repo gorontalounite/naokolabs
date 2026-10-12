@@ -1,5 +1,6 @@
 "use client";
 
+import type { Brief } from "@/lib/ai/schema";
 import { useEffect, useState } from "react";
 import type { RevisionItem, SampleVideo, Scene, VideoStatus } from "@/lib/video-data";
 
@@ -63,7 +64,9 @@ export type LocalVideoMeta = SampleVideo & {
   hashtags: string[];
   missingInputs: string[];
   warnings: string[];
-  sourceTitle?: string;
+  idea?: string;
+  brief?: Brief;
+  durationReason?: string;
 };
 
 const META_PREFIX = "naokolabs:video-meta:";

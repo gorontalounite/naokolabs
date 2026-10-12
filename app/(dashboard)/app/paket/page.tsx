@@ -8,13 +8,13 @@ const plans = [
   {
     name: "Starter",
     desc: "Untuk usaha yang baru mulai rutin posting video.",
-    features: ["Kuota video per bulan", "Semua gaya standar", "Voice-over, musik & subtitle", "Brand kit (logo, warna, penutup)", "Jadwal & auto-post 1 akun per platform"],
+    features: ["Kuota video per bulan", "Semua gaya standar", "Voice-over, musik & subtitle otomatis", "Brand kit (logo, warna, penutup)", "Unduh MP4 1080×1920 + caption"],
   },
   {
     name: "Bisnis",
     desc: "Untuk brand yang posting video setiap minggu.",
     featured: true,
-    features: ["Kuota video lebih besar", "Semua fitur Starter", "Beberapa brand dalam satu workspace", "Prioritas antrean produksi", "Jadwal ke beberapa akun"],
+    features: ["Kuota video lebih besar", "Semua fitur Starter", "Beberapa brand dalam satu workspace", "Prioritas antrean produksi"],
   },
   {
     name: "Agensi",

@@ -1,8 +1,8 @@
 "use client";
 
-import { CheckCircle2, Circle, Clapperboard, Download, LoaderCircle, Play, RefreshCw, RotateCcw, Send, Wand2 } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2, Circle, Clapperboard, Copy, Download, LoaderCircle, Play, RefreshCw, RotateCcw, Wand2 } from "lucide-react";
 import { useState } from "react";
+import { BriefCard } from "@/components/dashboard/BriefCard";
 import { PlanEditor } from "@/components/dashboard/PlanEditor";
 import { RevisionForm } from "@/components/dashboard/RevisionForm";
 import { useVideoState, type LocalVideoMeta } from "@/lib/video-store";
@@ -21,10 +21,12 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
   const style = findStyle(video.styleId);
   const tone = tones.find((t) => t.id === video.tone);
   const sceneNo = (id: string) => state.scenes.findIndex((s) => s.id === id) + 1;
+  // Durasi mengikuti adegan: berubah bila klien menambah, menghapus, atau mengubah durasi adegan.
+  const duration = state.scenes.reduce((n, s) => n + s.seconds, 0);
 
   const stepState = (index: number) => {
     const current = info.step - 1;
-    if (status === "terbit" || status === "terjadwal") return index <= current ? "done" : "todo";
+    if (status === "siap") return "done";
     return index < current ? "done" : index === current ? "current" : "todo";
   };
 
@@ -50,10 +52,10 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
 
       <div className="page-header">
         <div>
-          <p className="eyebrow">{style?.name} · {video.duration} detik · {tone?.label}</p>
+          <p className="eyebrow">{style?.name} · ± {duration} detik · {tone?.label}</p>
           <h1 className="page-title" style={{ marginTop: 6 }}>{video.title}</h1>
           <p className="page-subtitle">{info.label}</p>
-          {local?.concept && <p className="hint" style={{ marginTop: 6 }}>{local.concept}{local.sourceTitle ? ` Sumber: ${local.sourceTitle}.` : ""}</p>}
+          {local?.concept && <p className="hint" style={{ marginTop: 6 }}>{local.concept}</p>}
         </div>
       </div>
 
@@ -65,12 +67,13 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
 
       <div className="detail-layout">
         <div className="stack">
+          {local?.brief && <BriefCard brief={local.brief} durationReason={local.durationReason} />}
+
           {showPlan && (
             <PlanEditor
               scenes={state.scenes}
               caption={state.caption}
               version={state.planVersion}
-              duration={video.duration}
               editable={status === "rencana"}
               onDirtyChange={setDirty}
               onSave={(scenes, caption) => {
@@ -87,7 +90,7 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
                 <button type="button" aria-label="Putar video" onClick={() => setNote("File video contoh belum tersedia. Pemutar aktif setelah produksi sungguhan tersambung.")}>
                   <Play size={24} aria-hidden="true" />
                 </button>
-                <small>{video.duration} detik · 1080×1920</small>
+                <small>{duration} detik · 1080×1920</small>
               </div>
               <details className="notice">
                 <summary style={{ cursor: "pointer", fontWeight: 700 }}>Caption</summary>
@@ -191,19 +194,13 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
 
           {status === "siap" && (
             <div className="action-box">
-              <h2>Video siap diposting</h2>
-              <p className="hint">Jadwalkan ke akun yang terhubung, atau unduh untuk diposting sendiri.</p>
-              <Link href={`/app/jadwal?video=${video.id}`} className="btn btn-primary btn-block btn-center"><Send size={18} aria-hidden="true" /> Jadwalkan posting</Link>
-              <button type="button" className="btn btn-block btn-center" onClick={() => setNote("Unduhan tersedia setelah file video sungguhan ada.")}><Download size={18} aria-hidden="true" /> Unduh MP4</button>
-            </div>
-          )}
-
-          {status === "terjadwal" && video.schedule && (
-            <div className="action-box" style={{ borderColor: "var(--line)" }}>
-              <h2>Terjadwal</h2>
-              <p>{new Date(video.schedule.at).toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" })} WITA</p>
-              <p className="hint">{video.schedule.account} · {video.schedule.platform}</p>
-              <Link href="/app/jadwal" className="btn btn-block btn-center">Buka jadwal</Link>
+              <h2>Video siap diunduh</h2>
+              <p className="hint">Unduh video lalu posting dari aplikasi Instagram, TikTok atau Facebook bersama caption di bawah.</p>
+              <button type="button" className="btn btn-primary btn-block btn-center" onClick={() => setNote("Unduhan tersedia setelah file video sungguhan ada.")}><Download size={18} aria-hidden="true" /> Unduh MP4</button>
+              <button type="button" className="btn btn-block btn-center"
+                onClick={() => navigator.clipboard?.writeText(state.caption).then(() => setNote("Caption tersalin."), () => setNote("Caption tidak bisa disalin otomatis; salin manual dari bagian Caption."))}>
+                <Copy size={18} aria-hidden="true" /> Salin caption
+              </button>
             </div>
           )}
 
@@ -213,12 +210,14 @@ export function VideoDetail({ video }: { video: SampleVideo | LocalVideoMeta }) 
             <p className="detail-label">Detail</p>
             <p className="card-text">Brand: {video.brand}</p>
             <p className="card-text">Gaya: {style?.name}</p>
-            <p className="card-text">Durasi: {video.duration} detik · 9:16</p>
+            <p className="card-text">Durasi: ± {duration} detik · 9:16</p>
             <p className="card-text">Rencana: versi {state.planVersion}</p>
             <p className="card-text">Dibuat: {new Date(video.createdAt).toLocaleDateString("id-ID", { dateStyle: "long" })}</p>
-            <button type="button" className="back-link" style={{ marginTop: 6 }} onClick={() => { reset(); setNote("Contoh dikembalikan ke kondisi awal."); setRevising(false); }}>
-              <RotateCcw size={14} aria-hidden="true" style={{ verticalAlign: -2 }} /> Atur ulang contoh
-            </button>
+            {!local && (
+              <button type="button" className="back-link" style={{ marginTop: 6 }} onClick={() => { reset(); setNote("Contoh dikembalikan ke kondisi awal."); setRevising(false); }}>
+                <RotateCcw size={14} aria-hidden="true" style={{ verticalAlign: -2 }} /> Atur ulang contoh
+              </button>
+            )}
           </div>
         </aside>
       </div>

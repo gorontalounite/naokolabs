@@ -3,7 +3,6 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { buildPlannerPrompt } from "./prompts/build";
 import { PROMPT_VERSION } from "./prompts/global";
 import { PlanSchema, type Plan, type PlanRequest } from "./schema";
-import type { SourceContent } from "./source";
 import { hasErrors, validatePlan, type Issue } from "./validate";
 
 export const PLANNER_MODEL = "claude-opus-5-5";
@@ -19,20 +18,20 @@ export function plannerMode(): "contoh" | "ai" {
   return process.env.ANTHROPIC_API_KEY ? "ai" : "contoh";
 }
 
-export async function generatePlan(req: PlanRequest, source: SourceContent | null): Promise<PlannerResult> {
+export async function generatePlan(req: PlanRequest): Promise<PlannerResult> {
   if (plannerMode() === "contoh") {
-    const plan = samplePlan(req, source);
+    const plan = samplePlan(req);
     return { ok: true, mode: "contoh", plan, issues: validatePlan(plan, req), usage: null, promptVersion: PROMPT_VERSION, attempts: 0 };
   }
-  return generateWithClaude(req, source);
+  return generateWithClaude(req);
 }
 
 // ---------------------------------------------------------------------------
 // Mode AI: Claude dengan structured outputs, validasi server, dan satu kali perbaikan.
 
-async function generateWithClaude(req: PlanRequest, source: SourceContent | null): Promise<PlannerResult> {
+async function generateWithClaude(req: PlanRequest): Promise<PlannerResult> {
   const client = new Anthropic();
-  const { system, userText } = buildPlannerPrompt(req, source);
+  const { system, userText } = buildPlannerPrompt(req);
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: userText }];
   const usage: PlannerUsage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 };
 
@@ -84,81 +83,119 @@ async function generateWithClaude(req: PlanRequest, source: SourceContent | null
 }
 
 // ---------------------------------------------------------------------------
-// Mode contoh: rencana tetap berbasis template, dipakai selama API key belum dipasang.
-// Selalu lolos validatePlan agar alur Studio → rencana → persetujuan bisa diuji tanpa biaya.
-
-const LAYOUT: Record<number, number[]> = { 15: [5, 5, 5], 30: [5, 6, 7, 6, 6], 60: [8, 9, 9, 9, 9, 8, 8] };
+// Mode contoh: brief dan storyboard berbasis template, dipakai selama API key belum dipasang.
+// Durasi tetap mengikuti isi ide (jumlah poin) seperti aturan planner AI, dan selalu lolos validatePlan.
 
 const STOPWORDS = new Set(["di", "ke", "dari", "dan", "yang", "untuk", "dengan", "pada", "atau", "agar", "supaya", "dalam", "the", "of", "and"]);
+const POINT_NOUNS = "alasan|cara|langkah|tips|tip|hal|manfaat|kesalahan|fakta|ide|rahasia|jenis|trik|keunggulan|ciri|tanda";
+const ORDINAL = ["pertama", "kedua", "ketiga", "keempat", "kelima", "keenam"];
 
-function shortTopic(req: PlanRequest, source: SourceContent | null) {
-  const raw =
-    req.mode === "ide"
-      ? req.idea
-      : req.mode === "naskah"
-        ? req.script.split(/[.!?\n]/)[0]
-        : source?.title || req.pastedText.split(/[.!?\n]/)[0] || safeHost(req.link);
-  const words = raw.replace(/[?!.,:;]+$/g, "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean).slice(0, 6);
-  // Jangan berhenti di kata sambung ("monstera di").
+const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+function clip(text: string, maxWords: number) {
+  const words = text.replace(/[?!.,:;]+$/g, "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean).slice(0, maxWords);
   while (words.length > 1 && STOPWORDS.has(words[words.length - 1].toLowerCase())) words.pop();
-  const topic = words.join(" ");
-  // Huruf kecil di awal karena topik dipakai di tengah kalimat, kecuali singkatan/merek berhuruf kapital.
-  return topic && !/^[A-Z]{2,}/.test(topic) ? topic.charAt(0).toLowerCase() + topic.slice(1) : topic || "produk Anda";
+  return words.join(" ");
 }
 
-function safeHost(link: string) {
-  try {
-    return new URL(link).hostname.replace(/^www\./, "");
-  } catch {
-    return "";
+// Baca struktur ide: "3 alasan kopi lokal lebih segar" → 3 poin bernama "alasan", topik "kopi lokal lebih segar".
+export function readIdea(idea: string) {
+  const text = idea.replace(/\s+/g, " ").trim();
+  const listed = text.match(new RegExp(`(\\d+)\\s+(${POINT_NOUNS})\\b\\s*(.*)`, "i"));
+  if (listed) {
+    const count = Math.min(6, Math.max(2, Number(listed[1])));
+    return { count, noun: listed[2].toLowerCase(), topic: clip(listed[3] || text, 6) || "produk Anda", headline: clip(text, 8) };
   }
+  const words = text.split(" ").length;
+  // Tanpa daftar eksplisit: ide pendek = satu pesan, ide panjang = beberapa poin.
+  const count = words <= 8 ? 1 : words <= 18 ? 2 : 3;
+  const topic = clip(text, 6) || "produk Anda";
+  return { count, noun: "poin", topic: /^[A-Z]{2,}/.test(topic) ? topic : topic.charAt(0).toLowerCase() + topic.slice(1), headline: clip(text, 8) };
 }
 
-export function samplePlan(req: PlanRequest, source: SourceContent | null): Plan {
-  const t = shortTopic(req, source);
+const GOAL: Record<string, string> = {
+  promosi: "Penonton tertarik mencoba atau membeli",
+  edukasi: "Penonton paham dan bisa mempraktikkan",
+  hook: "Penonton berhenti menggulir, menonton sampai habis, lalu menyimpan video",
+  santai: "Penonton merasa dekat dengan brand dan ingin tahu lebih lanjut",
+  formal: "Penonton menerima informasi resmi dengan jelas",
+};
+
+export function samplePlan(req: PlanRequest): Plan {
+  const idea = readIdea(req.idea);
   const brand = req.brand?.name?.trim();
-  const cta = req.brand?.tagline?.trim() || `Simpan video ini dan ikuti ${req.brand?.handle?.trim() || "kami"} untuk info berikutnya.`;
+  const handle = req.brand?.handle?.trim();
+  const cta = req.brand?.tagline?.trim() || `Simpan video ini dan ikuti ${handle || "kami"} untuk info berikutnya.`;
   const video = req.assets.find((a) => a.kind === "video");
   const image = req.assets.find((a) => a.kind === "gambar");
+  const ugc = req.styleId === "ugc-edit" && video;
 
-  const beats: { purpose: string; screen: string; narration: string; visual: string }[] = [
-    { purpose: "Penonton berhenti menggulir karena topiknya relevan", screen: `${t.charAt(0).toUpperCase() + t.slice(1)}?`, narration: `Pernah penasaran soal ${t}?`, visual: "Judul besar di tengah layar dengan latar warna brand" },
-    { purpose: "Penonton mengenali masalah atau keinginannya", screen: "Banyak yang masih bingung\nharus mulai dari mana", narration: "Banyak orang masih bingung harus mulai dari mana.", visual: "Ikon tanda tanya bergeser membentuk daftar pendek" },
-    { purpose: "Penonton melihat solusi utama", screen: "Mulai dari langkah\npaling sederhana", narration: "Kuncinya, mulai dari langkah yang paling sederhana dulu.", visual: image ? `Foto dari aset klien: ${image.name}` : "Placeholder: foto produk atau suasana" },
-    { purpose: "Penonton memahami detail yang sering terlewat", screen: "Perhatikan detail ini", narration: "Perhatikan detail ini, karena sering terlewat.", visual: "Garis penanda menyorot satu bagian penting" },
-    { purpose: "Penonton yakin bisa mencobanya", screen: "Hasilnya lebih terasa", narration: "Langkah kecil ini membuat hasilnya jauh lebih terasa.", visual: "Perbandingan sebelum dan sesudah dalam dua kolom" },
-    { purpose: "Penonton tahu contoh penerapannya", screen: "Contoh yang bisa\nlangsung dicoba", narration: "Contohnya bisa langsung Anda coba hari ini juga.", visual: "Tiga kartu contoh muncul berurutan" },
-  ];
+  const points =
+    idea.noun === "poin"
+      ? idea.count === 1
+        ? [`Pesan utama: ${idea.topic}`]
+        : Array.from({ length: idea.count }, (_, i) => `Poin ${ORDINAL[i]} tentang ${idea.topic}`)
+      : Array.from({ length: idea.count }, (_, i) => `${cap(idea.noun)} ${ORDINAL[i]}`);
 
-  const seconds = LAYOUT[req.duration];
-  const middle = beats.slice(1, 1 + seconds.length - 2);
-  const ordered = [beats[0], ...middle];
-  const scenes = seconds.map((s, i) => {
-    const isLast = i === seconds.length - 1;
-    const beat = isLast
-      ? { purpose: "Penonton tahu langkah berikutnya", screen: brand ? `${brand.split(" ").slice(0, 4).join(" ")}` : "Langkah berikutnya", narration: cta.split(" ").slice(0, 11).join(" "), visual: "Logo brand dan ajakan penutup" }
-      : ordered[i];
+  type Beat = { purpose: string; seconds: number; screen: string; narration: string; visual: string };
+  const hook: Beat = {
+    purpose: "Penonton berhenti menggulir karena topiknya relevan",
+    seconds: 4,
+    screen: cap(idea.headline),
+    narration: idea.noun === "poin" ? `Pernah penasaran soal ${idea.topic}?` : `Ini ${idea.count} ${idea.noun} ${idea.topic}.`,
+    visual: "Judul besar di tengah layar dengan latar warna brand",
+  };
+  const body: Beat[] = points.map((pt, i) => ({
+    purpose: idea.count === 1 ? "Penonton menangkap pesan utama" : `Penonton memahami ${pt.toLowerCase()}`,
+    seconds: 6,
+    screen: idea.count === 1 ? clip(idea.topic, 8) : `${idea.noun === "poin" ? `Poin ${ORDINAL[i]}` : pt}\n(isi dari brief)`,
+    narration: idea.count === 1 ? "Ini yang perlu Anda tahu, singkat dan jelas." : `${cap(ORDINAL[i])}, penjelasan singkat sesuai brief.`,
+    visual: i === 0 && image ? `Foto dari aset klien: ${image.name}` : "Ikon dan kata kunci tersusun rapi",
+  }));
+  const end: Beat = {
+    purpose: "Penonton tahu langkah berikutnya",
+    seconds: 5,
+    screen: brand ? clip(brand, 4) : "Langkah berikutnya",
+    narration: clip(cta, 11),
+    visual: "Logo brand dan ajakan penutup",
+  };
+
+  const beats = [hook, ...body, end];
+  const scenes = beats.map((b, i) => {
+    const isLast = i === beats.length - 1;
     return {
-      purpose: beat.purpose,
-      seconds: s,
-      screenText: beat.screen,
-      narration: req.vo ? beat.narration : "",
-      visual: req.styleId === "ugc-edit" && video ? `Potongan rekaman klien (${video.name}): ${beat.visual.toLowerCase()}` : beat.visual,
+      purpose: b.purpose,
+      seconds: b.seconds,
+      screenText: b.screen,
+      narration: req.vo ? b.narration : "",
+      visual: ugc ? `Potongan rekaman klien (${video.name}): ${b.visual.toLowerCase()}` : b.visual,
       motion: { enter: i === 0 ? "Teks masuk dari bawah" : "Elemen bergeser dari adegan sebelumnya", action: "Kata kunci membesar sekali", exit: isLast ? "Tahan sampai akhir" : "Memudar ke adegan berikutnya" },
       sound: req.music ? (i === 0 ? "Ketukan pembuka" : "") : "",
-      assetId: req.styleId === "ugc-edit" && video ? video.id : i === 2 && image ? image.id : null,
+      assetId: ugc ? video.id : i === 1 && image ? image.id : null,
     };
   });
+  const duration = scenes.reduce((n, sc) => n + sc.seconds, 0);
 
   return {
     status: "ok",
-    title: brand ? `${brand}: ${t}` : t.charAt(0).toUpperCase() + t.slice(1),
-    concept: `Video ${req.duration} detik yang menjelaskan ${t} secara singkat dan mudah dipahami.`,
-    hook: `Pernah penasaran soal ${t}?`,
+    title: brand ? `${brand}: ${idea.headline}` : cap(idea.headline),
+    brief: {
+      goal: GOAL[req.tone] ?? GOAL.promosi,
+      audience: `Pengikut ${handle || "akun brand"} dan calon pelanggan yang tertarik dengan ${idea.topic}`,
+      keyMessage: cap(req.idea.trim().replace(/\s+/g, " ")),
+      angle: idea.count > 1 ? `Dipecah menjadi ${idea.count} ${idea.noun} yang mudah diingat` : "Satu pesan singkat yang langsung ke inti",
+      points,
+      cta,
+    },
+    duration,
+    durationReason:
+      idea.count === 1 ? `Satu pesan + pembuka dan penutup, cukup ${duration} detik.` : `${idea.count} ${idea.noun} + pembuka dan penutup, sekitar ${duration} detik.`,
+    concept: `Video ${duration} detik tentang ${idea.topic}.`,
+    hook: hook.narration,
     scenes,
-    caption: `${t.charAt(0).toUpperCase() + t.slice(1)} — dijelaskan singkat dalam ${req.duration} detik. ${cta}`,
+    caption: `${cap(idea.headline)}. ${cta}`,
     hashtags: ["NaokoLabs", "TipsBisnis", "UMKM"],
-    missingInputs: ["Ini contoh rencana: penyusunan otomatis oleh AI aktif setelah kunci API dipasang."],
-    sourcesUsed: source ? [source.title || source.url] : [],
+    missingInputs: ["Ini contoh brief dan storyboard dari template: isi tiap poin disusun AI setelah kunci API dipasang."],
+    sourcesUsed: [req.idea],
   };
 }

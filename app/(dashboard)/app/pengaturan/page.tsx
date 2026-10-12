@@ -9,7 +9,6 @@ export const metadata = { title: "Pengaturan & Brand Kit" };
 const tabs = [
   { id: "brand", label: "Brand Kit" },
   { id: "profil", label: "Profil & Keamanan" },
-  { id: "medsos", label: "Akun Medsos" },
 ] as const;
 
 const roleLabel: Record<string, string> = { owner: "Pemilik", member: "Anggota" };
@@ -52,17 +51,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         </div>
       )}
 
-      {tab === "medsos" && (
-        <div className="narrow stack">
-          <p className="hint">Menghubungkan akun hanya memberi izin. Setiap posting tetap Anda konfirmasi sendiri.</p>
-          {["Instagram", "TikTok", "Facebook Page"].map((p) => (
-            <div key={p} className="panel row" style={{ justifyContent: "space-between", padding: 18 }}>
-              <div><p className="card-title">{p}</p><p className="hint">Belum terhubung</p></div>
-              <button type="button" className="btn" disabled>Segera tersedia</button>
-            </div>
-          ))}
-        </div>
-      )}
     </>
   );
 }

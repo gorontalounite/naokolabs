@@ -2,20 +2,6 @@
 // Gaya, durasi dan batas mengikuti docs/FULLSET-SPEC.md dan docs/REFERENCE-LIBRARY.md.
 // Video contoh (sampleVideos) fiktif; diganti data database pada tahap 4.
 
-export type InputMode = "link" | "naskah" | "ide";
-
-export const inputModes: { id: InputMode; label: string; hint: string }[] = [
-  { id: "link", label: "Link Web", hint: "Link produk, artikel, atau postingan medsos" },
-  { id: "naskah", label: "Tulis Naskah", hint: "Naskah atau poin yang sudah Anda siapkan" },
-  { id: "ide", label: "Ide Singkat", hint: "Cukup satu kalimat topik" },
-];
-
-export const durations = [
-  { id: 15, label: "15 detik", desc: "Hook + pesan + CTA", words: "± 35 kata" },
-  { id: 30, label: "30 detik", desc: "Pesan lengkap, paling umum", words: "± 70 kata" },
-  { id: 60, label: "60 detik", desc: "Penjelasan mendalam", words: "± 140 kata" },
-] as const;
-
 export const tones = [
   { id: "edukasi", label: "Edukasi & Wawasan", desc: "Penjelasan runtut dan jelas" },
   { id: "promosi", label: "Promosi & Jualan", desc: "Sorot keunggulan, ajakan beli" },
@@ -118,19 +104,17 @@ export const voices = [
   { id: "wanita-energik", label: "Wanita · energik" },
 ];
 
-export type VideoStatus = "rencana" | "produksi" | "hasil" | "perbaikan" | "siap" | "terjadwal" | "terbit";
+export type VideoStatus = "rencana" | "produksi" | "hasil" | "perbaikan" | "siap";
 
 export const statusInfo: Record<VideoStatus, { label: string; step: number; action: string | null }> = {
-  rencana: { label: "Menunggu persetujuan rencana", step: 1, action: "Tinjau rencana" },
+  rencana: { label: "Menunggu persetujuan brief & storyboard", step: 1, action: "Tinjau rencana" },
   produksi: { label: "Sedang diproduksi", step: 2, action: null },
   hasil: { label: "Menunggu persetujuan hasil", step: 3, action: "Tinjau hasil" },
   perbaikan: { label: "Perbaikan sedang dikerjakan", step: 3, action: null },
-  siap: { label: "Siap diposting", step: 4, action: "Jadwalkan" },
-  terjadwal: { label: "Terjadwal", step: 4, action: null },
-  terbit: { label: "Sudah terbit", step: 4, action: null },
+  siap: { label: "Video siap diunduh", step: 4, action: "Unduh" },
 };
 
-export const videoSteps = ["Rencana", "Produksi", "Hasil", "Posting"] as const;
+export const videoSteps = ["Rencana", "Produksi", "Hasil", "Unduh"] as const;
 
 export type Scene = {
   id: string;
@@ -154,7 +138,6 @@ export type SampleVideo = {
   status: VideoStatus;
   planVersion: number;
   createdAt: string;
-  schedule?: { at: string; account: string; platform: string };
   scenes: Scene[];
   caption: string;
 };
@@ -214,10 +197,9 @@ export const sampleVideos: SampleVideo[] = [
     styleId: "whiteboard",
     duration: 15,
     tone: "formal",
-    status: "terjadwal",
+    status: "siap",
     planVersion: 1,
     createdAt: "2026-10-09",
-    schedule: { at: "2026-10-22T08:00", account: "@ruangsela.contoh", platform: "Instagram" },
     scenes: promoScenes.slice(0, 2),
     caption: "Selamat Hari Santri Nasional 2026. #HariSantri",
   },
@@ -226,6 +208,10 @@ export const sampleVideos: SampleVideo[] = [
 // Kecepatan baca narasi Bahasa Indonesia untuk perkiraan durasi (kata per detik).
 // Perkiraan saja; durasi final diukur dari audio (docs/STORYBOARD-PREVIEW.md).
 export const WORDS_PER_SECOND = 2.3;
+
+// Durasi ditentukan dari isi ide (D-18), dalam batas ini.
+export const MIN_VIDEO_SECONDS = 10;
+export const MAX_VIDEO_SECONDS = 60;
 
 export function countWords(text: string) {
   return text.trim() ? text.trim().split(/\s+/).length : 0;

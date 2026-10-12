@@ -14,12 +14,11 @@ Daftar/login, verifikasi akun, reset password, logout, pengaturan profil. Satu w
 
 Produk pertama adalah video vertikal 9:16 (Reels/Story/TikTok). Carousel menyusul dengan form tersendiri.
 
-Klien memilih satu dari tiga cara memasukkan bahan:
-- **Link Web**: link produk marketplace, artikel, atau postingan medsos. Sistem membaca isi halaman sebagai data. Bila halaman tidak bisa dibaca (diblokir, perlu login), klien diminta menempel teksnya.
-- **Tulis Naskah**: naskah atau poin dari klien, dipakai apa adanya; AI hanya menyusun adegan dan caption.
-- **Ide Singkat**: satu kalimat topik. Ide Konten (momen jualan, contoh ide) dapat mengisi kolom ini.
+Input klien hanya **ide singkat** (D-18): satu atau dua kalimat topik, maksimal 1.000 karakter. Ide Konten (momen jualan, contoh ide) dapat mengisi kolom ini. Link web dan tulis naskah tidak tersedia di MVP.
 
-Pilihan lain: durasi 15/30/60 detik; gaya bahasa (Edukasi, Promosi, Hook Viral, Santai, Formal); gaya video dari Katalog Gaya (standar atau perlu penawaran); voice-over dan suaranya; musik latar; subtitle. Brand kit (nama, handle, logo, warna, ajakan penutup) diambil dari Pengaturan.
+Planner mengubah ide menjadi **brief konten** (tujuan, penonton, pesan utama, sudut cerita, poin isi, ajakan) dan **storyboard**. **Durasi tidak dipilih di awal**: planner menentukannya dari banyaknya isi ide (10–60 detik) dan menampilkan alasannya; setelah itu durasi mengikuti adegan yang diedit klien.
+
+Pilihan lain: nada bicara (Edukasi, Promosi, Hook Viral, Santai, Formal); gaya video yang ditampilkan langsung di Studio beserta pratinjau gerak singkat (standar atau perlu penawaran); voice-over dan suaranya; musik latar. Subtitle selalu dibuat otomatis dari narasi, bukan pilihan. Brand kit (nama, handle, logo, warna, ajakan penutup) diambil dari Pengaturan.
 
 Unggahan aset (logo, foto, rekaman untuk gaya UGC, PDF/CSV sebagai sumber) diperlakukan sebagai data, bukan instruksi ke agen. Spesifikasi dan batas yang belum ditetapkan tidak boleh diasumsikan oleh AI.
 
@@ -51,7 +50,10 @@ Revisi: penempatan gambar/video; typo; pengucapan VO keliru. Form meminta scene/
 
 Jumlah putaran dan tenggat revisi TBD. Bukti persetujuan hasil final mengikat versi artefak dan caption. Perbaikan artefak tidak diam-diam mengganti versi yang sudah dijadwalkan.
 
-## FR-07 Posting dan jadwal
+## FR-07 Posting dan jadwal (di luar MVP, D-19)
+
+MVP berakhir pada unduhan: klien menerima MP4 dan caption lalu memposting sendiri. Bagian di bawah berlaku untuk tahap publishing berikutnya.
+
 
 Hubungkan akun melalui OAuth; tampilkan identitas akun, izin dan kemampuan format. Pengguna memilih hasil final, platform, akun, caption per platform, privasi/opsi wajib provider, dan waktu. Konfirmasi publikasi/schedule adalah otorisasi spesifik, berbeda dari persetujuan produksi.
 

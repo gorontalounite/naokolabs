@@ -1,48 +1,52 @@
 "use client";
 
-import { FileText, Link2, Lightbulb, LoaderCircle, Mic, Music, Palette, Sparkles, Subtitles, Wand2 } from "lucide-react";
+import { Check, LoaderCircle, Music, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AssetPicker, type PickedAsset } from "@/components/dashboard/AssetPicker";
+import { StylePreview } from "@/components/dashboard/StylePreview";
 import type { Plan } from "@/lib/ai/schema";
 import { planToVideo } from "@/lib/plan-to-video";
-import { durations, inputModes, tones, voices, type InputMode, type VideoStyle } from "@/lib/video-data";
+import { tones, voices, type VideoStyle } from "@/lib/video-data";
 import { saveLocalVideo } from "@/lib/video-store";
 
-const modeIcons = { link: Link2, naskah: FileText, ide: Lightbulb } as const;
 const STORAGE_KEY = "naokolabs:studio-draft";
+const IDEA_MAX = 1000;
+const examples = ["3 alasan kopi lokal lebih segar", "Promo pembukaan cabang baru, diskon 20% minggu pertama", "Cara merawat sepatu kulit agar awet", "Ucapan Hari Santri dari brand kami"];
 
-type Draft = {
-  mode: InputMode;
-  link: string;
-  script: string;
-  idea: string;
-  duration: number;
-  tone: string;
-  styleId: string;
-  vo: boolean;
-  voice: string;
-  music: boolean;
-  subtitles: boolean;
-};
+type Draft = { idea: string; tone: string; styleId: string; vo: boolean; voice: string; music: boolean };
 
-const initialDraft: Draft = {
-  mode: "link",
-  link: "",
-  script: "",
-  idea: "",
-  duration: 30,
-  tone: "promosi",
-  styleId: "motion-graphic",
-  vo: true,
-  voice: voices[0].id,
-  music: true,
-  subtitles: true,
-};
+const initialDraft: Draft = { idea: "", tone: "promosi", styleId: "motion-graphic", vo: true, voice: voices[0].id, music: true };
+
+function pickDraft(raw: Partial<Draft>): Draft {
+  const d = { ...initialDraft };
+  if (typeof raw.idea === "string") d.idea = raw.idea.slice(0, IDEA_MAX);
+  if (tones.some((t) => t.id === raw.tone)) d.tone = raw.tone!;
+  if (typeof raw.styleId === "string") d.styleId = raw.styleId;
+  if (typeof raw.vo === "boolean") d.vo = raw.vo;
+  if (voices.some((v) => v.id === raw.voice)) d.voice = raw.voice!;
+  if (typeof raw.music === "boolean") d.music = raw.music;
+  return d;
+}
+
+function Step({ no, title, desc, children }: { no: number; title: string; desc?: string; children: React.ReactNode }) {
+  const id = `langkah-${no}`;
+  return (
+    <section className="panel studio-step" aria-labelledby={id}>
+      <div className="studio-step-head">
+        <span className="studio-step-no" aria-hidden="true">{no}</span>
+        <div>
+          <h2 id={id}>{title}</h2>
+          {desc && <p>{desc}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle[]; presetStyle?: string; presetIdea?: string }) {
-  const findStyle = (id: string) => styles.find((st) => st.id === id);
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initialDraft);
   const [error, setError] = useState("");
@@ -50,26 +54,25 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
   const [rights, setRights] = useState(false);
   const [assetError, setAssetError] = useState("");
   const [rightsError, setRightsError] = useState("");
-  const [pastedText, setPastedText] = useState("");
-  const [needsPaste, setNeedsPaste] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const loaded = useRef(false);
+  const ideaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     let next = initialDraft;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) next = { ...initialDraft, ...JSON.parse(raw) };
+      if (raw) next = pickDraft(JSON.parse(raw));
     } catch {
       // Storage diblokir atau draf rusak: mulai dari awal.
     }
-    if (presetStyle && findStyle(presetStyle)) next = { ...next, styleId: presetStyle };
-    if (presetIdea) next = { ...next, mode: "ide", idea: presetIdea };
+    if (!styles.some((s) => s.id === next.styleId)) next = { ...next, styleId: styles[0]?.id ?? initialDraft.styleId };
+    if (presetStyle && styles.some((s) => s.id === presetStyle)) next = { ...next, styleId: presetStyle };
+    if (presetIdea) next = { ...next, idea: presetIdea.slice(0, IDEA_MAX) };
     // eslint-disable-next-line react-hooks/set-state-in-effect -- memulihkan draf setelah hidrasi
     setDraft(next);
     loaded.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- hanya saat preset berubah
-  }, [presetStyle, presetIdea]);
+  }, [presetStyle, presetIdea, styles]);
 
   useEffect(() => {
     if (!loaded.current) return;
@@ -85,17 +88,18 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
     setError("");
   };
 
-  const style = findStyle(draft.styleId) ?? styles[0];
-  const quickStyles = styles.filter((s) => s.tier === "standar").slice(0, 5);
+  const style = styles.find((s) => s.id === draft.styleId) ?? styles[0];
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (draft.mode === "link" && !/^https?:\/\/\S+\.\S+/.test(draft.link.trim())) return setError("Tempel link lengkap, diawali https://");
-    if (draft.mode === "naskah" && draft.script.trim().length < 20) return setError("Tulis naskah atau poin minimal 20 karakter.");
-    if (draft.mode === "ide" && draft.idea.trim().length < 5) return setError("Tulis ide atau topik video Anda.");
+    if (draft.idea.trim().length < 5) {
+      setError("Tulis ide video Anda, minimal satu kalimat pendek.");
+      ideaRef.current?.focus();
+      return;
+    }
     const valid = assets.filter((a) => !a.error);
     if (draft.styleId === "ugc-edit" && !valid.some((a) => a.kind === "video")) {
-      setAssetError("Tambahkan minimal satu rekaman video untuk gaya UGC.");
+      setAssetError("Gaya UGC membutuhkan minimal satu rekaman video Anda.");
       document.getElementById("aset-anda")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
@@ -104,7 +108,6 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
       document.getElementById("aset-anda")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    if (needsPaste && pastedText.trim().length < 40) return setError("Tempel isi halaman minimal beberapa kalimat.");
 
     let brand: { name?: string; handle?: string; tagline?: string } = {};
     try {
@@ -120,37 +123,29 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          mode: draft.mode,
-          link: draft.link.trim(),
-          script: draft.script,
-          idea: draft.idea,
-          pastedText: needsPaste ? pastedText : "",
-          duration: draft.duration,
+          idea: draft.idea.trim(),
           tone: draft.tone,
           styleId: draft.styleId,
           vo: draft.vo,
           voice: draft.voice,
           music: draft.music,
-          subtitles: draft.subtitles,
           brand: { name: brand.name ?? "", handle: brand.handle ?? "", tagline: brand.tagline ?? "" },
           assets: valid.map((a) => ({ id: a.key, name: a.name, kind: a.kind })),
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Rencana gagal disusun. Coba lagi.");
-        if (data.needsPaste) setNeedsPaste(true);
+        setError(data.error ?? "Brief gagal disusun. Coba lagi.");
         return;
       }
       const video = planToVideo(data.plan as Plan, {
-        duration: draft.duration,
         tone: draft.tone,
         styleId: draft.styleId,
         brand: brand.name ?? "",
+        idea: draft.idea.trim(),
         assetNames: Object.fromEntries(valid.map((a) => [a.key, a.name])),
         plannerMode: data.mode,
         warnings: (data.issues ?? []).map((i: { scene?: number; message: string }) => (i.scene ? `Adegan ${i.scene}: ${i.message}` : i.message)),
-        sourceTitle: data.source?.title,
       });
       saveLocalVideo(video);
       router.push(`/app/video/${video.id}`);
@@ -163,125 +158,59 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
 
   return (
     <form onSubmit={submit} noValidate className="stack">
-      <div className="segment" role="tablist" aria-label="Cara memasukkan bahan">
-        {inputModes.map((m) => {
-          const Icon = modeIcons[m.id];
-          return (
-            <button key={m.id} type="button" role="tab" aria-selected={draft.mode === m.id} onClick={() => set("mode", m.id)}>
-              <Icon size={18} aria-hidden="true" /> {m.label}
-            </button>
-          );
-        })}
-      </div>
-
-      <section className="panel" aria-label="Bahan dan pengaturan video">
+      <Step no={1} title="Tulis ide video Anda" desc="Satu atau dua kalimat cukup. Kami ubah menjadi brief konten dan storyboard; durasi video menyesuaikan isi ide.">
         <div className="field">
-          {draft.mode === "link" && (
-            <>
-              <label className="label" htmlFor="link">Tempel link produk, artikel, atau postingan</label>
-              <div className="input-icon">
-                <Link2 size={18} aria-hidden="true" />
-                <input id="link" className="input" type="url" inputMode="url" placeholder="https://tokopedia.com/…, https://instagram.com/…, link berita"
-                  value={draft.link} onChange={(e) => { set("link", e.target.value); setNeedsPaste(false); }} aria-invalid={!!error} aria-describedby="input-help" />
-              </div>
-              <p id="input-help" className="hint">AI membaca isi halaman lalu menyusun naskah. Mendukung marketplace, Instagram, TikTok, YouTube dan portal berita.</p>
-              {needsPaste && (
-                <div className="field" style={{ marginTop: 8 }}>
-                  <label className="label" htmlFor="pasted">Tempel isi halaman</label>
-                  <textarea id="pasted" className="textarea" placeholder="Salin nama produk, harga, keunggulan, atau isi artikel dari halaman tersebut"
-                    value={pastedText} onChange={(e) => { setPastedText(e.target.value); setError(""); }} />
-                </div>
-              )}
-            </>
-          )}
-          {draft.mode === "naskah" && (
-            <>
-              <label className="label" htmlFor="script">Tulis naskah atau poin penting</label>
-              <textarea id="script" className="textarea" placeholder="Contoh: Kedai kopi Ruang Sela buka 15 Oktober. Diskon 20% minggu pertama. Alamat Jl. Contoh No. 12…"
-                value={draft.script} onChange={(e) => set("script", e.target.value)} aria-invalid={!!error} aria-describedby="input-help" />
-              <p id="input-help" className="hint">Naskah Anda dipakai apa adanya; AI hanya menyusun adegan dan caption.</p>
-            </>
-          )}
-          {draft.mode === "ide" && (
-            <>
-              <label className="label" htmlFor="idea">Ide atau topik video</label>
-              <input id="idea" className="input" placeholder="Contoh: 3 alasan kopi lokal lebih segar"
-                value={draft.idea} onChange={(e) => set("idea", e.target.value)} aria-invalid={!!error} aria-describedby="input-help" />
-              <p id="input-help" className="hint">Belum punya ide? <Link href="/app/ide" className="text-link">Lihat Ide Konten</Link></p>
-            </>
-          )}
+          <label className="sr-only" htmlFor="idea">Ide video</label>
+          <textarea id="idea" ref={ideaRef} className="textarea idea-input" maxLength={IDEA_MAX}
+            placeholder="Contoh: 3 alasan kopi lokal lebih segar"
+            value={draft.idea} onChange={(e) => set("idea", e.target.value)} aria-invalid={!!error} aria-describedby="idea-meta" />
+          <div id="idea-meta" className="idea-meta">
+            <span>Sebut jumlah poin bila ada, misalnya “3 alasan” atau “5 langkah”.</span>
+            <span>{draft.idea.length}/{IDEA_MAX}</span>
+          </div>
           {error && <p className="field-error" role="alert">{error}</p>}
         </div>
-
-        <div className="panel-divider" />
-
-        <div id="aset-anda">
-          <AssetPicker
-            assets={assets}
-            onChange={(next) => { setAssets(next); setAssetError(""); }}
-            needsVideo={draft.styleId === "ugc-edit"}
-            rights={rights}
-            onRightsChange={(v) => { setRights(v); setRightsError(""); }}
-            rightsError={rightsError}
-          />
-          {assetError && <p className="field-error" role="alert" style={{ marginTop: 8 }}>{assetError}</p>}
-        </div>
-
-        <div className="panel-divider" />
-
-        <fieldset className="fieldset field">
-          <legend className="label-row" style={{ width: "100%" }}>
-            <span className="eyebrow">Durasi video</span>
-            <span className="badge">9:16 · Reels / Story / TikTok</span>
-          </legend>
-          <div className="options options-3">
-            {durations.map((d) => (
-              <button key={d.id} type="button" className="option" aria-pressed={draft.duration === d.id} onClick={() => set("duration", d.id)}>
-                <span className="option-title">{d.label} <span className="badge">{d.words}</span></span>
-                <span className="option-text">{d.desc}</span>
-              </button>
-            ))}
+        {!draft.idea.trim() && (
+          <div className="stack-s">
+            <span className="eyebrow">Contoh ide</span>
+            <div className="idea-examples">
+              {examples.map((ex) => (
+                <button key={ex} type="button" className="chip" onClick={() => { set("idea", ex); ideaRef.current?.focus(); }}>{ex}</button>
+              ))}
+            </div>
           </div>
-        </fieldset>
-
-        <div className="panel-divider" />
-
-        <fieldset className="fieldset field">
-          <legend className="eyebrow" style={{ marginBottom: 8 }}>Gaya bahasa</legend>
-          <div className="options options-tone">
+        )}
+        <fieldset className="fieldset stack-s">
+          <legend className="eyebrow" style={{ marginBottom: 8 }}>Nada bicara</legend>
+          <div className="chips">
             {tones.map((t) => (
-              <button key={t.id} type="button" className="option" aria-pressed={draft.tone === t.id} onClick={() => set("tone", t.id)}>
-                <span className="option-title" style={{ fontSize: 15 }}>{t.label}</span>
-                <span className="option-text">{t.desc}</span>
-              </button>
+              <button key={t.id} type="button" className="chip" aria-pressed={draft.tone === t.id} title={t.desc} onClick={() => set("tone", t.id)}>{t.label}</button>
             ))}
           </div>
         </fieldset>
-      </section>
+      </Step>
 
-      <section className="panel" aria-labelledby="gaya-title">
-        <div className="section-head">
-          <h2 id="gaya-title" className="section-title"><Palette size={20} aria-hidden="true" /> Gaya video</h2>
-          <Link href="/app/gaya" className="text-link">Lihat semua {styles.length} gaya →</Link>
-        </div>
-        <div className="style-picked">
-          <span className="style-thumb" aria-hidden="true"><Sparkles size={22} /></span>
-          <div>
-            <p className="row"><strong>{style.name}</strong>{style.tier === "quote" ? <span className="badge badge-warning">Perlu penawaran</span> : <span className="badge badge-success">Standar</span>}</p>
-            <p className="hint">{style.description}</p>
-          </div>
-          <Link href="/app/gaya" className="btn">Ganti gaya</Link>
-        </div>
-        <p className="eyebrow" style={{ margin: "18px 0 8px" }}>Pilihan cepat</p>
-        <div className="chips">
-          {quickStyles.map((s) => (
-            <button key={s.id} type="button" className="chip" aria-pressed={draft.styleId === s.id} onClick={() => set("styleId", s.id)}>{s.name}</button>
+      <Step no={2} title="Pilih gaya video" desc="Lihat contoh gerakannya, lalu pilih yang paling cocok dengan pesan Anda.">
+        <div className="style-grid" role="group" aria-label="Gaya video">
+          {styles.map((s) => (
+            <button key={s.id} type="button" className="style-option" aria-pressed={draft.styleId === s.id} onClick={() => { set("styleId", s.id); setAssetError(""); }}>
+              <span className="style-option-check" aria-hidden="true"><Check size={14} /></span>
+              <StylePreview styleId={s.id} />
+              <span className="style-option-name">{s.name}</span>
+              <span className="style-option-text">{s.tagline}</span>
+              {s.tier === "quote" && <span className="badge badge-warning">Perlu penawaran</span>}
+            </button>
           ))}
         </div>
+        {style && (
+          <p className="notice" role="status">
+            <strong>{style.name}:</strong> {style.description} <span className="hint">Cocok untuk {style.bestFor.toLowerCase()}.</span>{" "}
+            <Link href="/app/gaya" className="text-link">Detail semua gaya</Link>
+          </p>
+        )}
+      </Step>
 
-        <div className="panel-divider" />
-
-        <h2 className="section-title" style={{ marginBottom: 14 }}><Mic size={20} aria-hidden="true" /> Suara & musik</h2>
+      <Step no={3} title="Suara & musik">
         <div className="stack-s">
           <label className="switch">
             <span><strong>Voice-over</strong><br /><span className="hint">Narasi dibacakan suara AI berbahasa Indonesia</span></span>
@@ -300,20 +229,29 @@ export function Studio({ styles, presetStyle, presetIdea }: { styles: VideoStyle
             <input type="checkbox" checked={draft.music} onChange={(e) => set("music", e.target.checked)} />
             <span className="switch-track" aria-hidden="true" />
           </label>
-          <label className="switch">
-            <span><strong><Subtitles size={16} aria-hidden="true" style={{ verticalAlign: -2 }} /> Subtitle</strong><br /><span className="hint">Teks narasi tampil di layar</span></span>
-            <input type="checkbox" checked={draft.subtitles} onChange={(e) => set("subtitles", e.target.checked)} />
-            <span className="switch-track" aria-hidden="true" />
-          </label>
         </div>
-      </section>
+      </Step>
+
+      <Step no={4} title={draft.styleId === "ugc-edit" ? "Unggah rekaman video Anda" : "Aset Anda (opsional)"}
+        desc={draft.styleId === "ugc-edit" ? "Gaya UGC disusun dari rekaman Anda sendiri." : "Logo, foto produk atau rekaman. Tanpa aset, kami pakai visual sementara yang bisa diganti."}>
+        <div id="aset-anda">
+          <AssetPicker
+            assets={assets}
+            onChange={(next) => { setAssets(next); setAssetError(""); }}
+            needsVideo={draft.styleId === "ugc-edit"}
+            rights={rights}
+            onRightsChange={(v) => { setRights(v); setRightsError(""); }}
+            rightsError={rightsError}
+          />
+          {assetError && <p className="field-error" role="alert" style={{ marginTop: 8 }}>{assetError}</p>}
+        </div>
+      </Step>
 
       <button type="submit" className="btn btn-primary btn-xl" disabled={submitting} aria-busy={submitting}>
-        {submitting ? <><LoaderCircle size={20} aria-hidden="true" className="spin" /> Menyusun rencana…</> : <><Wand2 size={20} aria-hidden="true" /> Buat Rencana Video</>}
+        {submitting ? <><LoaderCircle size={20} aria-hidden="true" className="spin" /> Menyusun brief & storyboard…</> : <><Wand2 size={20} aria-hidden="true" /> Buat Brief & Storyboard</>}
       </button>
-      {error && <p className="field-error" role="alert" style={{ textAlign: "center" }}>{error}</p>}
       <p className="hint" style={{ textAlign: "center" }}>
-        Rencana (naskah, storyboard, caption) gratis dan bisa diedit. Kuota baru terpakai saat Anda klik &ldquo;Produksi Video&rdquo;.
+        Gratis dan bisa diedit. Kuota baru terpakai saat Anda menyetujui dan klik &ldquo;Produksi&rdquo;.
       </p>
     </form>
   );

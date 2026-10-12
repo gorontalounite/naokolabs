@@ -8,7 +8,7 @@ Menggantikan urutan tahap 0–13 di bawah untuk prioritas pengerjaan. Isi tiap t
 
 | Urutan | Pekerjaan | Status |
 |---|---|---|
-| A | Dashboard Studio Video (UI, data contoh): Studio, detail video, Ide Konten, Katalog Gaya, Riwayat, Jadwal, Panduan, Paket, Pengaturan & Brand Kit | Selesai sebagai pratinjau |
+| A | Dashboard Studio Video (UI, data contoh): Studio (ide singkat → brief & storyboard, D-18), detail video, Ide Konten, Katalog Gaya, Riwayat, Panduan, Paket, Pengaturan & Brand Kit. Jadwal & Auto-Post dikeluarkan dari MVP (D-19) | Selesai sebagai pratinjau |
 | B | Penyesuaian dokumen ke video-first + langganan | Dikerjakan |
 | C | Planner AI sungguhan (Anthropic, D-17): link/naskah/ide → naskah, storyboard, caption tervalidasi | Belakangan, perlu otorisasi biaya API |
 | D | Produksi satu video sungguhan (VO + render satu gaya, misalnya Motion Graphic) dan catat biaya nyata | Belakangan, perlu otorisasi biaya API |
@@ -99,7 +99,7 @@ Tugas: periksa output terhadap approved manifest, putar/dengar video penuh, insp
 
 Hasil: konten sesuai rencana dengan bukti kualitas. Gerbang: output tidak berubah diam-diam pada versi accepted; perubahan konsep dan cacat layanan dibedakan; kualitas/HPP terukur sebelum dijual.
 
-## 11 — Posting dan penjadwalan
+## 11 — Posting dan penjadwalan (setelah MVP, D-19)
 
 Tugas: integrasikan satu platform dahulu, lalu platform berikutnya; OAuth/scope/capability per akun; app review/audit; konfirmasi versi/caption/platform/timezone; scheduler server; reconnect, cancel, status reconciliation dan fallback download/manual.
 

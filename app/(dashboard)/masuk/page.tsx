@@ -24,7 +24,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <Link href="/" className="topbar-brand"><span className="side-logo" aria-hidden="true">N</span> NaokoLabs</Link>
         <div>
           <h1 className="page-title">Masuk</h1>
-          <p className="page-subtitle">Buat, setujui, dan jadwalkan video brand Anda.</p>
+          <p className="page-subtitle">Ubah ide singkat menjadi video brand siap posting.</p>
         </div>
 
         {params.error && errors[params.error] && <p className="field-error" role="alert">{errors[params.error]}</p>}

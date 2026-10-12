@@ -107,10 +107,7 @@ export function AssetPicker({
 
   return (
     <div className="stack-s">
-      <div className="label-row">
-        <span className="eyebrow">Aset Anda {needsVideo ? "(wajib rekaman video)" : "(opsional)"}</span>
-        <span className="hint">{valid.length}/{MAX_FILES} berkas</span>
-      </div>
+      <p className="hint" style={{ textAlign: "right" }}>{valid.length}/{MAX_FILES} berkas</p>
       <div className="upload-drop">
         <span className="empty-icon" aria-hidden="true"><Upload size={22} /></span>
         <div>

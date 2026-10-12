@@ -4,7 +4,7 @@ import "./dashboard.css";
 
 export const metadata: Metadata = {
   title: { default: "Studio Video — NAOKOLABS", template: "%s · NaokoLabs" },
-  description: "Buat, setujui, dan jadwalkan video brand dari satu dashboard.",
+  description: "Ubah ide singkat menjadi video brand siap posting.",
   icons: { icon: "/favicon.png", shortcut: "/favicon.png" },
   robots: { index: false, follow: false },
 };

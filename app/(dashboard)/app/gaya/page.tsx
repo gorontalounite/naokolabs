@@ -1,6 +1,7 @@
 import { Palette } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { StylePreview } from "@/components/dashboard/StylePreview";
 import { getVideoStyles } from "@/lib/catalog";
 
 export const metadata = { title: "Katalog Gaya" };
@@ -23,11 +24,7 @@ export default async function StylesPage() {
               {s.tier === "quote" ? <span className="badge badge-warning">Perlu penawaran</span> : <span className="badge badge-success">Standar</span>}
             </div>
             <p className="tagline">{s.tagline}</p>
-            <div className="style-preview" aria-hidden="true">
-              <span className="badge">Contoh belum tersedia</span>
-              <b>{s.name}</b>
-              <span>{s.tagline}</span>
-            </div>
+            <div className="style-card-preview"><StylePreview styleId={s.id} label="Contoh gerak" /></div>
             <p className="card-text">{s.description}</p>
             <div className="style-meta">
               <span><strong>Cocok untuk:</strong> {s.bestFor}</span>

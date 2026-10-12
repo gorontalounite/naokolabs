@@ -1,4 +1,4 @@
-import { countWords, readingSeconds } from "@/lib/video-data";
+import { countWords, MAX_VIDEO_SECONDS, MIN_VIDEO_SECONDS, readingSeconds } from "@/lib/video-data";
 import type { Plan, PlanRequest } from "./schema";
 
 // Aturan kualitas yang ditegakkan kode, bukan hanya diminta di prompt.
@@ -6,7 +6,7 @@ import type { Plan, PlanRequest } from "./schema";
 
 export type Issue = { level: "error" | "warning"; scene?: number; message: string };
 
-const SCENE_RANGE: Record<number, [number, number]> = { 15: [2, 4], 30: [3, 6], 60: [5, 9] };
+const SCENE_SECONDS: [number, number] = [2, 10]; // rata-rata durasi per adegan yang masih nyaman ditonton
 const MAX_WORDS_PER_LINE = 8;
 const MAX_LINES = 2;
 const CAPTION_LIMIT = 2200; // batas caption Instagram
@@ -15,15 +15,22 @@ export function validatePlan(plan: Plan, req: PlanRequest): Issue[] {
   const issues: Issue[] = [];
   if (plan.status !== "ok") return issues; // needs_input / unsupported ditangani pemanggil
 
-  const [minScenes, maxScenes] = SCENE_RANGE[req.duration];
-  if (plan.scenes.length < minScenes || plan.scenes.length > maxScenes) {
-    issues.push({ level: "error", message: `Jumlah adegan ${plan.scenes.length}; untuk ${req.duration} detik gunakan ${minScenes}–${maxScenes} adegan.` });
+  if (plan.duration < MIN_VIDEO_SECONDS || plan.duration > MAX_VIDEO_SECONDS) {
+    issues.push({ level: "error", message: `Durasi ${plan.duration} detik; gunakan ${MIN_VIDEO_SECONDS}–${MAX_VIDEO_SECONDS} detik sesuai isi ide.` });
   }
 
   const total = plan.scenes.reduce((n, s) => n + s.seconds, 0);
-  if (Math.abs(total - req.duration) > 3) {
-    issues.push({ level: "error", message: `Total durasi ${total} detik; target ${req.duration} detik (toleransi 3 detik).` });
+  if (Math.abs(total - plan.duration) > 2) {
+    issues.push({ level: "error", message: `Total durasi adegan ${total} detik tidak sama dengan durasi video ${plan.duration} detik.` });
   }
+
+  const minScenes = Math.max(2, Math.ceil(plan.duration / SCENE_SECONDS[1]));
+  const maxScenes = Math.max(minScenes, Math.floor(plan.duration / SCENE_SECONDS[0]));
+  if (plan.scenes.length < minScenes || plan.scenes.length > maxScenes) {
+    issues.push({ level: "error", message: `Jumlah adegan ${plan.scenes.length}; untuk ${plan.duration} detik gunakan ${minScenes}–${maxScenes} adegan.` });
+  }
+
+  if (!plan.brief.keyMessage.trim()) issues.push({ level: "error", message: "Brief belum punya pesan utama." });
 
   const assetIds = new Set(req.assets.map((a) => a.id));
   plan.scenes.forEach((s, i) => {

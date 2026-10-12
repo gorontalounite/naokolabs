@@ -4,11 +4,11 @@ Status: DRAF, diperbarui 12 Oktober 2026. Pola alur mengikuti referensi InstaDec
 
 ## Navigasi klien
 
-Menu (D-15): Studio Video; Ide Konten; Katalog Gaya; Riwayat Video; Jadwal & Auto-Post; Panduan; Paket & Kuota; Pengaturan & Brand Kit. Sidebar menampilkan kartu kuota bulan ini dan akun.
+Menu (D-15): Studio Video; Ide Konten; Katalog Gaya; Riwayat Video; Panduan; Paket & Kuota; Pengaturan & Brand Kit. Jadwal & Auto-Post di luar MVP (D-19). Sidebar menampilkan kartu kuota bulan ini dan akun.
 
-Alur Buat Video: pilih cara input (Link Web / Tulis Naskah / Ide Singkat) → durasi 15/30/60 detik → gaya bahasa → gaya video → suara, musik, subtitle → "Buat Rencana Video" → halaman video dengan penanda Rencana → Produksi → Hasil → Posting dan satu kotak "Yang perlu Anda lakukan" per tahap.
+Alur Buat Video (D-18) dalam empat langkah bernomor: 1) tulis ide singkat + nada bicara, 2) pilih gaya video dari kartu berpratinjau gerak, 3) suara & musik, 4) aset opsional (wajib rekaman untuk UGC) → "Buat Brief & Storyboard" → halaman video berisi brief konten, storyboard, naskah, caption, dengan penanda Rencana → Produksi → Hasil → Unduh dan satu kotak "Yang perlu Anda lakukan" per tahap. Tanpa pilihan durasi dan subtitle; Momen jualan dan Ide Konten tidak tampil di Studio.
 
-Halaman video menjadi pusat: rencana (storyboard per adegan, naskah, caption), persetujuan yang memakai kuota, progres produksi, hasil dan perbaikan, lalu jadwal atau unduh. Status internal tidak ditampilkan ke klien.
+Halaman video menjadi pusat: rencana (storyboard per adegan, naskah, caption), persetujuan yang memakai kuota, progres produksi, hasil dan perbaikan, lalu unduh MP4 dan salin caption. Status internal tidak ditampilkan ke klien.
 
 ## Tampilan penting
 
@@ -44,7 +44,7 @@ Seluruh alur klien harus selesai di ponsel, bukan hanya halaman beranda. Uji vie
 - Target sentuh utama sekurangnya 44×44 CSS pixel sebagai ketentuan desain proyek; jangan mengandalkan hover.
 - Tidak ada horizontal scroll halaman pada lebar 360 piksel; konten khusus yang membutuhkan scroll berada dalam container dengan petunjuk.
 
-Acceptance: user dapat membuat video di Studio → meninjau dan menyetujui rencana → melihat progres → meninjau hasil/revisi → menjadwalkan dari ponsel; login dan pembayaran langganan diuji di tahap akhir, dengan teks/biaya terbaca tanpa zoom manual dan tanpa aksi tertutup keyboard/overlay.
+Acceptance: user dapat membuat video di Studio → meninjau dan menyetujui rencana → melihat progres → meninjau hasil/revisi → mengunduh hasil dari ponsel; login dan pembayaran langganan diuji di tahap akhir, dengan teks/biaya terbaca tanpa zoom manual dan tanpa aksi tertutup keyboard/overlay.
 
 ## Konfigurator video 60s + presenter
 

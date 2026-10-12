@@ -1,0 +1,326 @@
+"use client";
+
+import { FileAudio, LoaderCircle, Trash2, Wand2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useId, useRef, useState } from "react";
+import { AssetPicker, type PickedAsset } from "@/components/dashboard/AssetPicker";
+import { VoiceoverUpload } from "@/components/dashboard/VoiceoverUpload";
+import type { Plan, Voiceover } from "@/lib/ai/schema";
+import { planToVideo } from "@/lib/plan-to-video";
+import { tones, voices } from "@/lib/video-data";
+import { uploadFootage, type StoredFootage } from "@/lib/footage-client";
+import { saveLocalVideo } from "@/lib/video-store";
+
+const STORAGE_KEY = "naokolabs:studio-draft";
+const IDEA_MAX = 1000;
+const MUSIC_MAX_BYTES = 30 * 1024 * 1024;
+const ideaExamples = ["3 alasan kopi lokal lebih segar", "Promo pembukaan cabang baru, diskon 20% minggu pertama", "Cara merawat sepatu kulit agar awet", "Ucapan Hari Santri dari brand kami"];
+
+// Default tanpa suara dan tanpa musik: dashboard hanya menambahkan bila pengguna memintanya (D-22).
+type VoMode = "none" | "upload" | "ai";
+type MusicMode = "none" | "upload" | "library";
+type Draft = { idea: string; tone: string; voMode: VoMode; voice: string; musicMode: MusicMode };
+
+export type StudioReference = { id: string; title: string; file: string; style: string };
+
+const initialDraft: Draft = { idea: "", tone: "promosi", voMode: "none", voice: voices[0].id, musicMode: "none" };
+
+function pickDraft(raw: Partial<Draft>): Draft {
+  const d = { ...initialDraft };
+  if (typeof raw.idea === "string") d.idea = raw.idea.slice(0, IDEA_MAX);
+  if (tones.some((t) => t.id === raw.tone)) d.tone = raw.tone!;
+  if (raw.voMode === "ai" || raw.voMode === "upload" || raw.voMode === "none") d.voMode = raw.voMode;
+  if (voices.some((v) => v.id === raw.voice)) d.voice = raw.voice!;
+  if (raw.musicMode === "none" || raw.musicMode === "upload" || raw.musicMode === "library") d.musicMode = raw.musicMode;
+  return d;
+}
+
+function Step({ no, title, desc, children, id }: { no: number; title: string; desc?: string; children: React.ReactNode; id?: string }) {
+  const headingId = `langkah-${no}`;
+  return (
+    <section className="panel studio-step" aria-labelledby={headingId} id={id}>
+      <div className="studio-step-head">
+        <span className="studio-step-no" aria-hidden="true">{no}</span>
+        <div>
+          <h2 id={headingId}>{title}</h2>
+          {desc && <p>{desc}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Choice<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { id: T; title: string; text: string; disabled?: boolean }[]; onChange: (v: T) => void }) {
+  return (
+    <fieldset className="fieldset stack-s">
+      <legend className="eyebrow" style={{ marginBottom: 8 }}>{label}</legend>
+      <div className="options options-3">
+        {options.map((o) => (
+          <button key={o.id} type="button" className="option" aria-pressed={value === o.id} disabled={o.disabled} onClick={() => onChange(o.id)}>
+            <span className="option-title" style={{ fontSize: 15 }}>{o.title}</span>
+            <span className="option-text">{o.text}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+export function Studio({ presetIdea, reference }: { presetIdea?: string; reference?: StudioReference | null }) {
+  const router = useRouter();
+  const musicInputId = useId();
+  const [draft, setDraft] = useState<Draft>(initialDraft);
+  const [ref, setRef] = useState<StudioReference | null>(reference ?? null);
+  const [error, setError] = useState("");
+  const [assets, setAssets] = useState<PickedAsset[]>([]);
+  const [rights, setRights] = useState(false);
+  const [rightsError, setRightsError] = useState("");
+  const [voiceover, setVoiceover] = useState<Voiceover | null>(null);
+  const [voFile, setVoFile] = useState<File | null>(null);
+  const [voRights, setVoRights] = useState(false);
+  const [voError, setVoError] = useState("");
+  const [music, setMusic] = useState<{ name: string; size: number; file: File } | null>(null);
+  const [musicError, setMusicError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [progress, setProgress] = useState("");
+  const loaded = useRef(false);
+  const ideaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    let next = initialDraft;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) next = pickDraft(JSON.parse(raw));
+    } catch {
+      // Storage diblokir atau draf rusak: mulai dari awal.
+    }
+    if (presetIdea) next = { ...next, idea: presetIdea.slice(0, IDEA_MAX) };
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- memulihkan draf setelah hidrasi
+    setDraft(next);
+    loaded.current = true;
+  }, [presetIdea]);
+
+  useEffect(() => {
+    if (!loaded.current) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+    } catch {
+      // Draf hanya kenyamanan; abaikan bila tidak bisa disimpan.
+    }
+  }, [draft]);
+
+  const set = <K extends keyof Draft>(key: K, value: Draft[K]) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setError("");
+  };
+
+  const pickMusic = (file: File | undefined) => {
+    setMusicError("");
+    if (!file) return;
+    if (!file.type.startsWith("audio/") && !/\.(mp3|m4a|wav|aac|ogg)$/i.test(file.name)) return setMusicError("Gunakan file audio MP3, M4A atau WAV.");
+    if (file.size > MUSIC_MAX_BYTES) return setMusicError("File musik maksimal 30 MB.");
+    setMusic({ name: file.name, size: file.size, file });
+  };
+
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const useUpload = draft.voMode === "upload";
+    if (!useUpload && draft.idea.trim().length < 5) {
+      setError("Tulis ide video Anda, minimal satu kalimat pendek.");
+      ideaRef.current?.focus();
+      return;
+    }
+    const valid = assets.filter((a) => !a.error);
+    if (valid.length > 0 && !rights) { setRightsError("Konfirmasi hak pemakaian footage dulu."); return scrollTo("footage"); }
+    if (useUpload && !voiceover) { setVoError("Unggah file voice-over dulu, atau pilih Tanpa suara."); return scrollTo("suara"); }
+    if (useUpload && !voRights) { setVoError("Konfirmasi hak pemakaian rekaman suara dulu."); return scrollTo("suara"); }
+    if (draft.musicMode === "upload" && !music) { setMusicError("Pilih file backsound dulu, atau pilih Tanpa backsound."); return scrollTo("suara"); }
+
+    let brand: { name?: string; handle?: string; tagline?: string } = {};
+    try {
+      brand = JSON.parse(localStorage.getItem("naokolabs:brand-kit") ?? "{}");
+    } catch {
+      // Brand kit opsional.
+    }
+
+    const assetList = valid.map((a) => ({ id: a.key, name: a.name, kind: a.kind }));
+    if (draft.musicMode === "upload" && music) assetList.push({ id: `musik:${music.name}`, name: music.name, kind: "audio" });
+
+    setSubmitting(true);
+    setError("");
+    try {
+      // Footage diunggah dulu; bila penyimpanan belum aktif, storyboard tetap dibuat tanpa footage di video.
+      let footage: Record<string, StoredFootage> = {};
+      let skipped = "";
+      const toSend = valid.map((a) => ({ key: a.key, file: a.file }));
+      if (useUpload && voFile) toSend.push({ key: "__voice", file: voFile });
+      if (draft.musicMode === "upload" && music) toSend.push({ key: "__music", file: music.file });
+      if (toSend.length > 0) {
+        setProgress(`Mengunggah berkas (0/${toSend.length})…`);
+        const up = await uploadFootage(toSend, (d, t) => setProgress(`Mengunggah berkas (${d}/${t})…`));
+        if (up.ok) footage = up.byKey;
+        else if (up.disabled) skipped = "Penyimpanan berkas belum aktif, jadi footage, voice-over, dan backsound belum ikut di video.";
+        else {
+          setError(up.error);
+          return;
+        }
+      }
+      const audioFiles = { voice: footage["__voice"]?.path, music: footage["__music"]?.path };
+      delete footage["__voice"];
+      delete footage["__music"];
+      setProgress("Menyusun storyboard…");
+      const res = await fetch("/api/rencana", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          idea: draft.idea.trim(),
+          tone: draft.tone,
+          exampleId: ref ? ref.id : undefined,
+          vo: draft.voMode !== "none",
+          voice: draft.voice,
+          voiceover: useUpload ? voiceover : undefined,
+          music: draft.musicMode !== "none",
+          musicSource: draft.musicMode,
+          brand: { name: brand.name ?? "", handle: brand.handle ?? "", tagline: brand.tagline ?? "" },
+          assets: assetList,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Brief gagal disusun. Coba lagi.");
+        return;
+      }
+      const video = planToVideo(data.plan as Plan, {
+        tone: draft.tone,
+        exampleTitle: ref ? ref.title : undefined,
+        brand: brand.name ?? "",
+        idea: draft.idea.trim(),
+        audio: { voMode: draft.voMode, voice: draft.voice, musicMode: draft.musicMode },
+        voiceover: useUpload && voiceover ? { fileName: voiceover.fileName, seconds: voiceover.seconds } : undefined,
+        assetNames: Object.fromEntries(assetList.map((a) => [a.id, a.name])),
+        plannerMode: data.mode,
+        footage,
+        audioFiles,
+        warnings: [...(skipped ? [skipped] : []), ...(data.issues ?? []).map((i: { scene?: number; message: string }) => (i.scene ? `Adegan ${i.scene}: ${i.message}` : i.message))],
+      });
+      saveLocalVideo(video);
+      router.push(`/app/video/${video.id}`);
+    } catch {
+      setError("Koneksi terputus. Periksa internet lalu coba lagi.");
+    } finally {
+      setSubmitting(false);
+      setProgress("");
+    }
+  };
+
+  return (
+    <form onSubmit={submit} noValidate className="stack">
+      <Step no={1} title="Tulis ide video Anda"
+        desc={draft.voMode === "upload"
+          ? "Anda memakai voice-over sendiri, jadi ide ini hanya konteks tambahan dan boleh dikosongkan."
+          : "Satu atau dua kalimat cukup. Dari ide ini kami susun storyboard (urutan adegan, teks, dan gerak) sebagai panduan membuat video. Durasi mengikuti isi ide."}>
+        <div className="field">
+          <label className="sr-only" htmlFor="idea">Ide video</label>
+          <textarea id="idea" ref={ideaRef} className="textarea idea-input" maxLength={IDEA_MAX}
+            placeholder="Contoh: 3 alasan kopi lokal lebih segar"
+            value={draft.idea} onChange={(e) => set("idea", e.target.value)} aria-invalid={!!error} aria-describedby="idea-meta" />
+          <div id="idea-meta" className="idea-meta">
+            <span>Sebut jumlah poin bila ada, misalnya “3 alasan” atau “5 langkah”.</span>
+            <span>{draft.idea.length}/{IDEA_MAX}</span>
+          </div>
+          {error && <p className="field-error" role="alert">{error}</p>}
+        </div>
+        {!draft.idea.trim() && (
+          <div className="stack-s">
+            <span className="eyebrow">Contoh ide</span>
+            <div className="idea-examples">
+              {ideaExamples.map((ex) => (
+                <button key={ex} type="button" className="chip" onClick={() => { set("idea", ex); ideaRef.current?.focus(); }}>{ex}</button>
+              ))}
+            </div>
+          </div>
+        )}
+        <fieldset className="fieldset stack-s">
+          <legend className="eyebrow" style={{ marginBottom: 8 }}>Nada bicara</legend>
+          <div className="chips">
+            {tones.map((t) => (
+              <button key={t.id} type="button" className="chip" aria-pressed={draft.tone === t.id} title={t.desc} onClick={() => set("tone", t.id)}>{t.label}</button>
+            ))}
+          </div>
+        </fieldset>
+      </Step>
+
+      {ref && (
+        <div className="ref-chip" role="status">
+          <span>Acuan tampilan dari Katalog: <strong>{ref.title}</strong> <span className="hint">({ref.file})</span></span>
+          <button type="button" className="icon-btn" aria-label="Hapus acuan" onClick={() => setRef(null)}><X size={16} aria-hidden="true" /></button>
+        </div>
+      )}
+
+      <Step no={2} id="footage" title="Footage (opsional)" desc="Foto atau video Anda. Tanpa footage, video dibuat dari tipografi, bentuk dan ikon.">
+        <AssetPicker
+          assets={assets}
+          onChange={(next) => setAssets(next)}
+          rights={rights}
+          onRightsChange={(v) => { setRights(v); setRightsError(""); }}
+          rightsError={rightsError}
+        />
+      </Step>
+
+      <Step no={3} id="suara" title="Voice-over & backsound (opsional)" desc="Tanpa pilihan di sini, video dibuat tanpa suara narasi dan tanpa musik.">
+        <Choice label="Voice-over" value={draft.voMode} onChange={(v) => { set("voMode", v); setVoError(""); }} options={[
+          { id: "none", title: "Tanpa suara", text: "Pesan dibawa teks di layar" },
+          { id: "upload", title: "Unggah voice-over", text: "Rekaman narasi yang sudah jadi" },
+          { id: "ai", title: "Tambahkan suara AI", text: "Naskah dibacakan suara AI" },
+        ]} />
+        {draft.voMode === "ai" && (
+          <div className="chips" role="group" aria-label="Pilih suara">
+            {voices.map((v) => (
+              <button key={v.id} type="button" className="chip" aria-pressed={draft.voice === v.id} onClick={() => set("voice", v.id)}>{v.label}</button>
+            ))}
+          </div>
+        )}
+        {draft.voMode === "upload" && (
+          <VoiceoverUpload value={voiceover} onChange={(v, f) => { setVoiceover(v); setVoFile(v ? (f ?? null) : null); setVoError(""); if (!v) setVoRights(false); }}
+            rights={voRights} onRightsChange={(v) => { setVoRights(v); setVoError(""); }} rightsError={voiceover ? voError || undefined : undefined} />
+        )}
+        {draft.voMode === "upload" && !voiceover && voError && <p className="field-error" role="alert">{voError}</p>}
+
+        <div className="panel-divider" />
+
+        <Choice label="Backsound" value={draft.musicMode} onChange={(v) => { set("musicMode", v); setMusicError(""); }} options={[
+          { id: "none", title: "Tanpa backsound", text: "Tidak ada musik latar" },
+          { id: "upload", title: "Unggah backsound", text: "Musik milik Anda atau berlisensi" },
+          { id: "library", title: "Musik pustaka (segera)", text: "Pustaka musik berlisensi belum tersedia", disabled: true },
+        ]} />
+        {draft.musicMode === "upload" && (
+          music ? (
+            <div className="asset">
+              <span className="asset-thumb" aria-hidden="true"><FileAudio size={20} /></span>
+              <span className="asset-info"><span className="asset-name">{music.name}</span><span className="hint">{(music.size / (1024 * 1024)).toFixed(1)} MB · musik mengecil otomatis saat ada narasi</span></span>
+              <button type="button" className="icon-btn icon-btn-danger" aria-label="Hapus backsound" onClick={() => setMusic(null)}><Trash2 size={16} aria-hidden="true" /></button>
+            </div>
+          ) : (
+            <div className="row">
+              <label htmlFor={musicInputId} className="btn">Pilih file musik</label>
+              <span className="hint">MP3, M4A atau WAV, maksimal 30 MB.</span>
+              <input id={musicInputId} type="file" className="sr-only" accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/aac,audio/ogg,.mp3,.m4a,.wav"
+                onChange={(e) => { pickMusic(e.target.files?.[0]); e.target.value = ""; }} />
+            </div>
+          )
+        )}
+        {musicError && <p className="field-error" role="alert">{musicError}</p>}
+      </Step>
+
+      <button type="submit" className="btn btn-primary btn-xl" disabled={submitting} aria-busy={submitting}>
+        {submitting ? <><LoaderCircle size={20} aria-hidden="true" className="spin" /> {progress || "Menyusun storyboard…"}</> : <><Wand2 size={20} aria-hidden="true" /> Buat Storyboard</>}
+      </button>
+      <p className="hint" style={{ textAlign: "center" }}>
+        Gratis dan bisa diedit. Kuota baru terpakai saat Anda menyetujui dan klik &ldquo;Produksi&rdquo;.
+      </p>
+    </form>
+  );
+}

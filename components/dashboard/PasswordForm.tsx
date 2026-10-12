@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { updatePassword } from "@/app/(dashboard)/app/akun/password/actions";
+import { updatePassword } from "@/app/(dashboard)/app/pengaturan/password/actions";
 
 export function PasswordForm() {
   const [state, action, pending] = useActionState(updatePassword, {});
@@ -17,7 +17,7 @@ export function PasswordForm() {
         <input id="confirm" name="confirm" type="password" className="input" autoComplete="new-password" />
       </div>
       {state.error && <p className="field-error" role="alert">{state.error}</p>}
-      <button type="submit" className="btn btn-primary" disabled={pending}>{pending ? "Menyimpan…" : "Simpan password"}</button>
+      <button type="submit" className="btn btn-primary btn-block btn-center" disabled={pending}>{pending ? "Menyimpan…" : "Simpan password"}</button>
     </form>
   );
 }

@@ -41,7 +41,7 @@ export function LoginForm({ next, disabled }: { next: string; disabled: boolean 
     <div className="stack">
       <form action={signInWithGoogle}>
         <input type="hidden" name="next" value={next} />
-        <button type="submit" className="btn" disabled={disabled}>Lanjut dengan Google</button>
+        <button type="submit" className="btn btn-block btn-center" disabled={disabled}>Lanjut dengan Google</button>
       </form>
 
       <p className="divider-text"><span>atau dengan email</span></p>
@@ -83,7 +83,7 @@ export function LoginForm({ next, disabled }: { next: string; disabled: boolean 
         {state.error && <p className="field-error" role="alert">{state.error}</p>}
         {state.message && <p className="notice" role="status">{state.message}</p>}
 
-        <button type="submit" className="btn btn-primary" disabled={disabled || pending}>
+        <button type="submit" className="btn btn-primary btn-block btn-center" disabled={disabled || pending}>
           {pending ? "Memproses…" : submitLabel}
         </button>
       </form>

@@ -81,7 +81,7 @@ export async function sendPasswordReset(_: AuthState, formData: FormData): Promi
   if (!email) return { error: "Masukkan email yang valid." };
 
   const supabase = await createClient();
-  await supabase.auth.resetPasswordForEmail(email, { redirectTo: await callbackUrl("/app/akun/password") });
+  await supabase.auth.resetPasswordForEmail(email, { redirectTo: await callbackUrl("/app/pengaturan/password") });
   // Pesan sama untuk email terdaftar maupun tidak, agar tidak membocorkan akun.
   return { message: "Jika email terdaftar, tautan atur ulang password sudah dikirim." };
 }

@@ -51,3 +51,11 @@ Setiap keputusan baru mencatat tanggal, alasan, dampak ke PRD/ARD/harga, dan kep
 Pengguna meminta menetapkan cakupan dan menguji biaya. Cakupan video 30 detik/6 scene dan carousel 8 slide kini menjadi baseline uji di FULLSET-SPEC, bukan persetujuan syarat layanan publik. Subtitle video sederhana included pada baseline sebagai usulan; source editable/thumbnail/format tambahan di luar baseline. Dua putaran feedback/7 hari merupakan usulan operasional, bukan arahan asli pengguna.
 
 Tiga quote shot Higgsfield sudah diperoleh tanpa spending; ledger simulasi dan protocol dibuat. Harga final/perubahan target margin belum disetujui. Produksi aktual menunggu runtime/skill, aset uji dan billing budget yang sesuai. Definisi layanan standar/premium diperbarui lewat hasil actual pilot, bukan nama style saja.
+
+## Keputusan 12 Oktober 2026 — arah dashboard
+
+- D-11: Dashboard fokus satu produk dulu: **Buat Video** (Reels/Story 9:16). Carousel dipindah ke tahap berikutnya. Menggantikan D-02 untuk urutan pembangunan, bukan untuk katalog layanan jangka panjang.
+- D-12: Pola alur dashboard mengikuti referensi InstaDeck yang diberikan pengguna: Studio sebagai pusat dengan tiga cara input (Link Web, Tulis Naskah, Ide Singkat), pilihan berbentuk kartu, katalog gaya, riwayat, jadwal, panduan, paket, pengaturan & brand kit. Identitas visual tetap NaokoLabs.
+- D-13: Setelah klien klik "Buat Video", AI menyusun **rencana dulu** (naskah, storyboard, caption) yang bisa diedit; produksi berbiaya berjalan hanya setelah klien klik "Produksi Video". Sejalan dengan D-03 dan FR-04.
+- D-14: Model bayar klien: **langganan bulanan dengan kuota video**, menggantikan D-07 (PAYG per komponen) untuk alur dashboard. Harga paket, kuota per paket, biaya durasi 60 detik, dan sisa kuota akhir bulan **belum ditetapkan**; harus dihitung dari biaya produksi nyata (lihat PAYG-PRICING.md bagian 9 dan VIDEO-60S-AVATAR-ECONOMICS.md) sebelum checkout aktif.
+- D-15: Halaman versi pertama: Studio Video, Ide Konten, Katalog Gaya Video, Riwayat Video, Jadwal & Auto-Post, Panduan, Paket & Kuota, Pengaturan & Brand Kit. Analitik dan program afiliasi tidak termasuk.

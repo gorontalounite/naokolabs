@@ -1,72 +1,55 @@
+import { CalendarDays } from "lucide-react";
 import Link from "next/link";
-import { FixtureNote, PageHeader } from "@/components/dashboard/PageHeader";
-import { activeOrders, nextSchedule, pendingApproval } from "@/lib/fixtures";
+import { Studio } from "@/components/dashboard/Studio";
+import { formatShortDate, upcomingMoments } from "@/lib/moments";
+import { todayWita } from "@/lib/today";
+import { getViewer } from "@/lib/workspace";
 
-export const metadata = { title: "Beranda" };
+export const metadata = { title: "Studio Video" };
 
-export default function HomePage() {
+export default async function StudioPage({ searchParams }: { searchParams: Promise<{ gaya?: string; ide?: string }> }) {
+  const params = await searchParams;
+  const viewer = await getViewer();
+  const name = viewer?.mode === "signed-in" ? (viewer.fullName ?? viewer.email.split("@")[0]) : null;
+  const moments = upcomingMoments(todayWita(), 4);
+
   return (
     <>
-      <PageHeader
-        title="Beranda"
-        subtitle="Tinjau konten dan lanjutkan pesanan."
-        action={<Link href="/app/buat" className="btn btn-primary header-cta">+ Buat Konten</Link>}
-      />
+      <section className="hero">
+        <div className="stack">
+          <h1 className="hero-title">Studio Video</h1>
+          <p className="hero-greet">{name ? `Selamat datang, ${name}!` : "Selamat datang!"} Buat video Reels, Story dan TikTok untuk brand Anda.</p>
+          <p className="hero-lede">Tempel link, tulis naskah, atau cukup satu ide. Kami susun rencananya, Anda setujui, lalu video diproduksi.</p>
+          <ol className="steps-inline" aria-label="Langkah membuat video">
+            <li>Masukkan bahan</li>
+            <li>Setujui rencana</li>
+            <li>Video siap posting</li>
+          </ol>
+        </div>
+        <div className="hero-visual" aria-hidden="true">
+          <div><span>Reels 9:16 · 30 detik</span><b>Video brand Anda</b></div>
+        </div>
+      </section>
 
-      <div className="home-grid">
-        <section className="area-approval" aria-labelledby="perlu-persetujuan">
-          <h2 id="perlu-persetujuan" className="section-title">Perlu persetujuan</h2>
-          <div className="card">
-            <h3 className="card-title">{pendingApproval.title}</h3>
-            <p className="card-text">Rencana versi {pendingApproval.planVersion} menunggu tinjauan.</p>
-            <p className="card-text">Periksa naskah, storyboard dan caption.</p>
-            <Link href={pendingApproval.action.href} className="btn">Tinjau rencana</Link>
-          </div>
-        </section>
-
-        <section className="area-orders" aria-labelledby="pesanan-aktif">
-          <h2 id="pesanan-aktif" className="section-title">Pesanan aktif</h2>
-
-          <div className="order-cards">
-            {activeOrders.map((item) => (
-              <div className="card" key={item.id}>
-                <h3 className="card-title">{item.title}</h3>
-                <p className="card-text">{item.stage}</p>
-                <Link href={item.action.href} className="text-link">{item.action.label} →</Link>
-              </div>
-            ))}
-          </div>
-
-          <div className="card order-table">
-            <table>
-              <thead>
-                <tr><th scope="col">Konten</th><th scope="col">Pekerjaan saat ini</th><th scope="col">Tindakan</th></tr>
-              </thead>
-              <tbody>
-                {activeOrders.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.title}</td>
-                    <td>{item.stage}</td>
-                    <td><Link href={item.action.href} className="text-link">{item.action.label} →</Link></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="area-schedule" aria-labelledby="jadwal-terdekat">
-          <h2 id="jadwal-terdekat" className="section-title">Jadwal terdekat</h2>
-          <div className="card schedule-card">
-            <h3 className="card-title">{nextSchedule.title}</h3>
-            <p className="card-text">{nextSchedule.account} · {nextSchedule.platform}</p>
-            <p className="card-text">{nextSchedule.date} · {nextSchedule.time}</p>
-            <Link href="/app/kalender" className="btn">Lihat jadwal</Link>
-          </div>
-        </section>
+      <div className="section">
+        <Studio presetStyle={params.gaya} presetIdea={params.ide} />
       </div>
 
-      <FixtureNote>Contoh tampilan berisi data fiktif · wireframe</FixtureNote>
+      <section className="section" aria-labelledby="momen-title">
+        <div className="section-head">
+          <h2 id="momen-title" className="section-title"><CalendarDays size={20} aria-hidden="true" /> Momen jualan terdekat</h2>
+          <Link href="/app/ide" className="text-link">Semua ide konten →</Link>
+        </div>
+        <div className="moments">
+          {moments.map((m) => (
+            <div className="moment" key={m.name + m.date.toISOString()}>
+              <div className="row"><span className="hint">{formatShortDate(m.date)}</span><span className="badge">{m.daysLeft === 0 ? "Hari ini" : `${m.daysLeft} hari lagi`}</span></div>
+              <p className="moment-name">{m.name}</p>
+              <Link className="text-link" href={`/app?ide=${encodeURIComponent(`Konten ${m.name}: ${m.angle}`)}`}>Buat video →</Link>
+            </div>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

@@ -7,6 +7,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const viewer = await getViewer();
   if (!viewer) redirect("/masuk");
 
-  const footer = viewer.mode === "preview" ? "Mode pratinjau · data contoh" : viewer.workspaces[0]?.name ?? "Dashboard Content";
-  return <AppShell footer={footer}>{children}</AppShell>;
+  const account =
+    viewer.mode === "preview"
+      ? { name: "Tamu", workspace: "Pratinjau", preview: true }
+      : { name: viewer.fullName ?? viewer.email, workspace: viewer.workspaces[0]?.name ?? "Workspace", preview: false };
+
+  return <AppShell account={account}>{children}</AppShell>;
 }

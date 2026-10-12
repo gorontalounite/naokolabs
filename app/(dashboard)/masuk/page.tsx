@@ -21,10 +21,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <main className="auth">
       <div className="auth-card stack">
-        <Link href="/" className="topbar-brand">NaokoLabs</Link>
+        <Link href="/" className="topbar-brand"><span className="side-logo" aria-hidden="true">N</span> NaokoLabs</Link>
         <div>
           <h1 className="page-title">Masuk</h1>
-          <p className="page-subtitle">Kelola pesanan, persetujuan dan jadwal konten.</p>
+          <p className="page-subtitle">Buat, setujui, dan jadwalkan video brand Anda.</p>
         </div>
 
         {params.error && errors[params.error] && <p className="field-error" role="alert">{errors[params.error]}</p>}
@@ -38,7 +38,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
         <LoginForm next={next} disabled={!isSupabaseConfigured} />
 
-        {!isSupabaseConfigured && <Link href="/app" className="btn btn-primary">Buka pratinjau dashboard</Link>}
+        {!isSupabaseConfigured && <Link href="/app" className="btn btn-dark btn-block btn-center">Buka pratinjau dashboard</Link>}
       </div>
     </main>
   );

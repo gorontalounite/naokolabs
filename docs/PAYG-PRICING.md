@@ -141,4 +141,4 @@ Setujui atau ubah envelope standar; tentukan apa yang dimaksud footage included 
 
 ## Pembaruan pilot v0.3
 
-Baseline lebih konkret ada di [FULLSET-SPEC](FULLSET-SPEC.md). [PILOT-COST-REPORT](PILOT-COST-REPORT.md) berisi simulasi memakai tarif publik sebelum diskon dan tiga quote MCP langsung. Promo historis pada bagian 9 bukan dasar tariff production. Quality/end-to-end belum diuji; ikuti [PILOT-PROTOCOL](PILOT-PROTOCOL.md).
+Baseline lebih konkret ada di [FULLSET-SPEC](FULLSET-SPEC.md). PILOT-COST-REPORT berisi simulasi memakai tarif publik sebelum diskon dan tiga quote MCP langsung. Promo historis pada bagian 9 bukan dasar tariff production. Quality/end-to-end belum diuji; ikuti PILOT-PROTOCOL.

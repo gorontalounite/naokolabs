@@ -71,7 +71,7 @@ File output + caption termasuk anchor fullset. Tarif posting/scheduling belum di
 
 ## Kriteria lulus spesifikasi
 
-Seluruh output sesuai brief/brand/sumber; durasi/ukuran/urutan benar; script dan fakta tidak berubah; teks terbaca di ponsel; pengucapan diperiksa dengan mendengarkan; tidak ada media salah/crop/blank; lisensi aset tercatat; versi dan approval cocok. [PILOT-PROTOCOL](PILOT-PROTOCOL.md) menetapkan pengukuran biaya dan kualitas.
+Seluruh output sesuai brief/brand/sumber; durasi/ukuran/urutan benar; script dan fakta tidak berubah; teks terbaca di ponsel; pengucapan diperiksa dengan mendengarkan; tidak ada media salah/crop/blank; lisensi aset tercatat; versi dan approval cocok. PILOT-PROTOCOL menetapkan pengukuran biaya dan kualitas.
 
 ## Pembaruan pilot 60 detik
 

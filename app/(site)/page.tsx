@@ -42,7 +42,10 @@ export default function Home() {
           <a href="#process">Process</a>
           <a href="#about">About</a>
         </div>
-        <a className="nav-cta" href="#contact">Mulai Proyek <span>→</span></a>
+        <div className="nav-actions">
+          <Link className="nav-login" href="/masuk">Masuk</Link>
+          <a className="nav-cta" href="#contact">Mulai Proyek <span>→</span></a>
+        </div>
       </nav>
 
       <section id="top" className="hero section-shell">

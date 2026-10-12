@@ -57,4 +57,4 @@ Pemilik menginginkan aplikasi siap berkembang ke lebih dari 10 integrasi. Seluru
 
 ## Baseline untuk pembuktian biaya
 
-[Fullset pilot](FULLSET-SPEC.md) mendefinisikan video hingga 30 detik dan carousel hingga 8 slide sebagai batas uji, bukan tariff aktif. [Laporan biaya](PILOT-COST-REPORT.md) memisahkan quote, simulasi dan actual spending. Target margin dan ketentuan komersial tetap perlu keputusan pemilik.
+[Fullset pilot](FULLSET-SPEC.md) mendefinisikan video hingga 30 detik dan carousel hingga 8 slide sebagai batas uji, bukan tariff aktif. Laporan biaya memisahkan quote, simulasi dan actual spending. Target margin dan ketentuan komersial tetap perlu keputusan pemilik.

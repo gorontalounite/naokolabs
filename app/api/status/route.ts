@@ -15,6 +15,9 @@ export function GET() {
     footage: footageStorageEnabled(),
     production: footageStorageEnabled() && githubEnabled(),
     // Rincian ya/tidak per variabel (nilai tidak pernah dikirim), untuk mencari variabel yang belum terbaca.
+    // Deploy yang menjawab dan nama variabel terkait Supabase yang ada di server (hanya nama).
+    deploy: { env: process.env.VERCEL_ENV ?? null, sha: (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || null, branch: process.env.VERCEL_GIT_COMMIT_REF ?? null },
+    supabaseNames: Object.keys(process.env).filter((k) => /supa|github|auth_req/i.test(k)).sort(),
     env: {
       NEXT_PUBLIC_SUPABASE_URL: Boolean(supabaseUrl),
       NEXT_PUBLIC_SUPABASE_ANON_KEY: Boolean(supabaseAnonKey),

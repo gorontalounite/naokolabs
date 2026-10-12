@@ -118,12 +118,13 @@ export const voices = [
   { id: "wanita-energik", label: "Wanita · energik" },
 ];
 
-export type VideoStatus = "rencana" | "produksi" | "hasil" | "siap" | "terjadwal" | "terbit";
+export type VideoStatus = "rencana" | "produksi" | "hasil" | "perbaikan" | "siap" | "terjadwal" | "terbit";
 
 export const statusInfo: Record<VideoStatus, { label: string; step: number; action: string | null }> = {
   rencana: { label: "Menunggu persetujuan rencana", step: 1, action: "Tinjau rencana" },
   produksi: { label: "Sedang diproduksi", step: 2, action: null },
   hasil: { label: "Menunggu persetujuan hasil", step: 3, action: "Tinjau hasil" },
+  perbaikan: { label: "Perbaikan sedang dikerjakan", step: 3, action: null },
   siap: { label: "Siap diposting", step: 4, action: "Jadwalkan" },
   terjadwal: { label: "Terjadwal", step: 4, action: null },
   terbit: { label: "Sudah terbit", step: 4, action: null },
@@ -218,6 +219,35 @@ export const sampleVideos: SampleVideo[] = [
     caption: "Selamat Hari Santri Nasional 2026. #HariSantri",
   },
 ];
+
+// Kecepatan baca narasi Bahasa Indonesia untuk perkiraan durasi (kata per detik).
+// Perkiraan saja; durasi final diukur dari audio (docs/STORYBOARD-PREVIEW.md).
+export const WORDS_PER_SECOND = 2.3;
+
+export function countWords(text: string) {
+  return text.trim() ? text.trim().split(/\s+/).length : 0;
+}
+
+export function readingSeconds(text: string) {
+  return Math.ceil(countWords(text) / WORDS_PER_SECOND);
+}
+
+export type RevisionKind = "media" | "typo" | "pengucapan";
+
+export const revisionKinds: { id: RevisionKind; label: string; hint: string }[] = [
+  { id: "media", label: "Gambar/video salah tempat", hint: "Visual tidak sesuai adegan, terpotong, atau tertukar" },
+  { id: "typo", label: "Typo / teks salah", hint: "Ejaan, angka, harga, alamat, atau nama yang salah di layar" },
+  { id: "pengucapan", label: "Pengucapan keliru", hint: "Narasi salah membaca nama, singkatan, atau angka" },
+];
+
+export type RevisionItem = {
+  id: string;
+  sceneId: string;
+  kind: RevisionKind;
+  wrong: string;
+  expected: string;
+  replacementFile?: string;
+};
 
 export function findVideo(id: string) {
   return sampleVideos.find((video) => video.id === id);

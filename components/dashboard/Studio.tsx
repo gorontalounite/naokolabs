@@ -4,6 +4,7 @@ import { FileText, Link2, Lightbulb, Mic, Music, Palette, Sparkles, Subtitles, W
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AssetPicker, type PickedAsset } from "@/components/dashboard/AssetPicker";
 import { durations, findStyle, inputModes, tones, videoStyles, voices, type InputMode } from "@/lib/video-data";
 
 const modeIcons = { link: Link2, naskah: FileText, ide: Lightbulb } as const;
@@ -41,6 +42,10 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initialDraft);
   const [error, setError] = useState("");
+  const [assets, setAssets] = useState<PickedAsset[]>([]);
+  const [rights, setRights] = useState(false);
+  const [assetError, setAssetError] = useState("");
+  const [rightsError, setRightsError] = useState("");
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -80,6 +85,17 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
     if (draft.mode === "link" && !/^https?:\/\/\S+\.\S+/.test(draft.link.trim())) return setError("Tempel link lengkap, diawali https://");
     if (draft.mode === "naskah" && draft.script.trim().length < 20) return setError("Tulis naskah atau poin minimal 20 karakter.");
     if (draft.mode === "ide" && draft.idea.trim().length < 5) return setError("Tulis ide atau topik video Anda.");
+    const valid = assets.filter((a) => !a.error);
+    if (draft.styleId === "ugc-edit" && !valid.some((a) => a.kind === "video")) {
+      setAssetError("Tambahkan minimal satu rekaman video untuk gaya UGC.");
+      document.getElementById("aset-anda")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    if (valid.length > 0 && !rights) {
+      setRightsError("Konfirmasi hak pemakaian aset dulu.");
+      document.getElementById("aset-anda")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     router.push("/app/video/promo-ruang-sela?dari=studio");
   };
 
@@ -126,6 +142,20 @@ export function Studio({ presetStyle, presetIdea }: { presetStyle?: string; pres
             </>
           )}
           {error && <p className="field-error" role="alert">{error}</p>}
+        </div>
+
+        <div className="panel-divider" />
+
+        <div id="aset-anda">
+          <AssetPicker
+            assets={assets}
+            onChange={(next) => { setAssets(next); setAssetError(""); }}
+            needsVideo={draft.styleId === "ugc-edit"}
+            rights={rights}
+            onRightsChange={(v) => { setRights(v); setRightsError(""); }}
+            rightsError={rightsError}
+          />
+          {assetError && <p className="field-error" role="alert" style={{ marginTop: 8 }}>{assetError}</p>}
         </div>
 
         <div className="panel-divider" />

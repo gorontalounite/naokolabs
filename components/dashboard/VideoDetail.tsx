@@ -1,26 +1,34 @@
 "use client";
 
-import { CheckCircle2, Circle, Clapperboard, Download, LoaderCircle, Pencil, Play, RefreshCw, Send } from "lucide-react";
+import { CheckCircle2, Circle, Clapperboard, Download, LoaderCircle, Play, RefreshCw, RotateCcw, Send, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { findStyle, statusInfo, tones, videoSteps, type SampleVideo, type VideoStatus } from "@/lib/video-data";
-
-type Tab = "naskah" | "storyboard" | "caption";
+import { PlanEditor } from "@/components/dashboard/PlanEditor";
+import { RevisionForm } from "@/components/dashboard/RevisionForm";
+import { useVideoState } from "@/lib/video-store";
+import { findStyle, revisionKinds, statusInfo, tones, videoSteps, type SampleVideo } from "@/lib/video-data";
 
 export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStudio: boolean }) {
-  const [status, setStatus] = useState<VideoStatus>(video.status);
-  const [tab, setTab] = useState<Tab>("storyboard");
+  const { state, update, reset } = useVideoState(video);
+  const [dirty, setDirty] = useState(false);
   const [note, setNote] = useState("");
+  const [revising, setRevising] = useState(false);
+  const [askAi, setAskAi] = useState(false);
+  const [requestText, setRequestText] = useState("");
+  const { status } = state;
   const info = statusInfo[status];
   const style = findStyle(video.styleId);
   const tone = tones.find((t) => t.id === video.tone);
-  const total = video.scenes.reduce((sum, s) => sum + s.seconds, 0);
+  const sceneNo = (id: string) => state.scenes.findIndex((s) => s.id === id) + 1;
 
   const stepState = (index: number) => {
     const current = info.step - 1;
     if (status === "terbit" || status === "terjadwal") return index <= current ? "done" : "todo";
     return index < current ? "done" : index === current ? "current" : "todo";
   };
+
+  const showPlan = status === "rencana" || status === "produksi";
+  const showResult = !showPlan;
 
   return (
     <div className="stack">
@@ -46,52 +54,22 @@ export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStu
 
       <div className="detail-layout">
         <div className="stack">
-          {(status === "rencana" || status === "produksi") && (
-            <section className="panel" aria-labelledby="rencana-title">
-              <div className="section-head">
-                <h2 id="rencana-title" className="section-title">Rencana versi {video.planVersion}</h2>
-                <span className="badge">Total ± {total} detik · perkiraan</span>
-              </div>
-              <div className="segment" role="tablist" aria-label="Bagian rencana" style={{ marginBottom: 16 }}>
-                {(["storyboard", "naskah", "caption"] as const).map((t) => (
-                  <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
-                    {t === "storyboard" ? "Storyboard" : t === "naskah" ? "Naskah" : "Caption"}
-                  </button>
-                ))}
-              </div>
-
-              {tab === "storyboard" && (
-                <ol className="stack" style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                  {video.scenes.map((scene, i) => (
-                    <li key={scene.id} className="scene">
-                      <div className="scene-head">
-                        <h3>Adegan {i + 1}</h3>
-                        <span className="badge">± {scene.seconds} detik</span>
-                      </div>
-                      <div className="scene-body">
-                        <div className="keyframe">{scene.asset.placeholder ? "PLACEHOLDER" : "RENCANA"}<br />{scene.asset.label}</div>
-                        <div className="stack-s">
-                          <div><p className="detail-label">Teks di layar</p><p className="detail-text">{scene.screenText}</p></div>
-                          <div><p className="detail-label">Narasi</p><p className="detail-text">{scene.narration}</p></div>
-                          <div><p className="detail-label">Visual</p><p className="detail-text">{scene.visual}</p></div>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              )}
-
-              {tab === "naskah" && (
-                <ol className="stack" style={{ margin: 0, paddingLeft: 20 }}>
-                  {video.scenes.map((scene) => <li key={scene.id} className="detail-text">{scene.narration}</li>)}
-                </ol>
-              )}
-
-              {tab === "caption" && <p className="detail-text">{video.caption}</p>}
-            </section>
+          {showPlan && (
+            <PlanEditor
+              scenes={state.scenes}
+              caption={state.caption}
+              version={state.planVersion}
+              duration={video.duration}
+              editable={status === "rencana"}
+              onDirtyChange={setDirty}
+              onSave={(scenes, caption) => {
+                update({ scenes, caption, planVersion: state.planVersion + 1 });
+                setNote(`Versi ${state.planVersion + 1} tersimpan. Periksa sekali lagi sebelum menyetujui.`);
+              }}
+            />
           )}
 
-          {(status === "hasil" || status === "siap" || status === "terjadwal" || status === "terbit") && (
+          {showResult && (
             <section className="panel stack" aria-labelledby="hasil-title">
               <h2 id="hasil-title" className="section-title">Hasil video</h2>
               <div className="video-frame">
@@ -102,8 +80,33 @@ export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStu
               </div>
               <details className="notice">
                 <summary style={{ cursor: "pointer", fontWeight: 700 }}>Caption</summary>
-                <p style={{ marginTop: 8 }}>{video.caption}</p>
+                <p style={{ marginTop: 8 }}>{state.caption}</p>
               </details>
+            </section>
+          )}
+
+          {status === "hasil" && revising && (
+            <RevisionForm
+              scenes={state.scenes}
+              onCancel={() => setRevising(false)}
+              onSubmit={(items) => {
+                update({ revisions: items, status: "perbaikan" });
+                setRevising(false);
+                setNote(`${items.length} perbaikan terkirim. Kami kabari saat versi perbaikan siap ditinjau.`);
+              }}
+            />
+          )}
+
+          {status === "perbaikan" && state.revisions.length > 0 && (
+            <section className="panel stack-s" aria-labelledby="daftar-revisi">
+              <h2 id="daftar-revisi" className="section-title">Perbaikan yang diminta</h2>
+              {state.revisions.map((r) => (
+                <div key={r.id} className="card">
+                  <p className="row" style={{ gap: 6 }}><span className="badge badge-accent">{revisionKinds.find((k) => k.id === r.kind)?.label}</span><span className="hint">Adegan {sceneNo(r.sceneId)}</span></p>
+                  <p className="card-text"><strong>Salah:</strong> {r.wrong}</p>
+                  <p className="card-text"><strong>Seharusnya:</strong> {r.expected}</p>
+                </div>
+              ))}
             </section>
           )}
         </div>
@@ -112,13 +115,31 @@ export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStu
           {status === "rencana" && (
             <div className="action-box">
               <h2>Yang perlu Anda lakukan</h2>
-              <p className="hint">Periksa naskah, storyboard dan caption. Setelah disetujui, video diproduksi dan memakai 1 kuota.</p>
-              <button type="button" className="btn btn-primary btn-block btn-center" onClick={() => { setStatus("produksi"); setNote(""); }}>
-                <Clapperboard size={18} aria-hidden="true" /> Setujui & Produksi Video
+              <p className="hint">Periksa storyboard, naskah dan caption. Klik ikon pensil untuk mengubah adegan. Setelah disetujui, video diproduksi dan memakai 1 kuota.</p>
+              <button type="button" className="btn btn-primary btn-block btn-center" disabled={dirty}
+                onClick={() => { update({ status: "produksi" }); setNote(""); }}>
+                <Clapperboard size={18} aria-hidden="true" /> Setujui versi {state.planVersion} & Produksi
               </button>
-              <button type="button" className="btn btn-block btn-center" onClick={() => setNote("Pratinjau: edit per adegan dan buat ulang rencana dibuat pada tahap berikutnya.")}>
-                <Pencil size={18} aria-hidden="true" /> Minta perubahan rencana
-              </button>
+              {dirty && <p className="hint">Simpan atau batalkan perubahan dulu sebelum menyetujui.</p>}
+              {!askAi ? (
+                <button type="button" className="btn btn-block btn-center" onClick={() => setAskAi(true)}>
+                  <Wand2 size={18} aria-hidden="true" /> Minta AI menyusun ulang
+                </button>
+              ) : (
+                <div className="field">
+                  <label className="label" htmlFor="ai-request">Apa yang perlu diubah?</label>
+                  <textarea id="ai-request" className="textarea" style={{ minHeight: 100 }} placeholder="Contoh: buat pembuka lebih memancing rasa ingin tahu, sebut harga di adegan 2"
+                    value={requestText} onChange={(e) => setRequestText(e.target.value)} />
+                  <div className="btn-pair">
+                    <button type="button" className="btn btn-center" onClick={() => setAskAi(false)}>Batal</button>
+                    <button type="button" className="btn btn-dark btn-center" disabled={!requestText.trim()}
+                      onClick={() => { update({ changeRequest: requestText.trim() }); setAskAi(false); setNote("Permintaan tersimpan. Penyusunan ulang oleh AI aktif setelah planner tersambung."); }}>
+                      Kirim
+                    </button>
+                  </div>
+                </div>
+              )}
+              {state.changeRequest && <p className="notice"><strong>Permintaan terakhir:</strong> {state.changeRequest}</p>}
             </div>
           )}
 
@@ -127,25 +148,33 @@ export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStu
               <h2>Video sedang diproduksi</h2>
               <p className="hint">Anda boleh menutup halaman ini. Kami kabari lewat email saat video siap ditinjau.</p>
               <ul className="progress-list">
-                <li><CheckCircle2 size={18} color="var(--success)" aria-hidden="true" /> Rencana disetujui</li>
+                <li><CheckCircle2 size={18} color="var(--success)" aria-hidden="true" /> Rencana versi {state.planVersion} disetujui</li>
                 <li><LoaderCircle size={18} color="var(--accent-strong)" aria-hidden="true" /> Membuat suara narasi</li>
                 <li><Circle size={18} color="var(--line-strong)" aria-hidden="true" /> Menyusun adegan & render</li>
                 <li><Circle size={18} color="var(--line-strong)" aria-hidden="true" /> Pemeriksaan kualitas</li>
               </ul>
-              <button type="button" className="btn btn-block btn-center" onClick={() => setStatus("hasil")}>Lihat contoh hasil (pratinjau)</button>
+              <button type="button" className="btn btn-block btn-center" onClick={() => update({ status: "hasil" })}>Lihat contoh hasil (pratinjau)</button>
             </div>
           )}
 
-          {status === "hasil" && (
+          {status === "hasil" && !revising && (
             <div className="action-box">
               <h2>Tinjau hasil video</h2>
               <p className="hint">Tonton sampai selesai. Perbaikan gratis untuk gambar salah tempat, typo, dan pengucapan yang keliru.</p>
-              <button type="button" className="btn btn-primary btn-block btn-center" onClick={() => setStatus("siap")}>
+              <button type="button" className="btn btn-primary btn-block btn-center" onClick={() => update({ status: "siap" })}>
                 <CheckCircle2 size={18} aria-hidden="true" /> Setujui hasil
               </button>
-              <button type="button" className="btn btn-block btn-center" onClick={() => setNote("Pratinjau: formulir revisi per adegan dibuat pada tahap berikutnya.")}>
+              <button type="button" className="btn btn-block btn-center" onClick={() => setRevising(true)}>
                 <RefreshCw size={18} aria-hidden="true" /> Minta perbaikan
               </button>
+            </div>
+          )}
+
+          {status === "perbaikan" && (
+            <div className="action-box" style={{ borderColor: "var(--line)" }}>
+              <h2>Perbaikan sedang dikerjakan</h2>
+              <p className="hint">Hanya bagian yang diminta yang diubah. Versi baru kembali untuk Anda tinjau.</p>
+              <button type="button" className="btn btn-block btn-center" onClick={() => update({ status: "hasil" })}>Lihat hasil perbaikan (pratinjau)</button>
             </div>
           )}
 
@@ -174,7 +203,11 @@ export function VideoDetail({ video, fromStudio }: { video: SampleVideo; fromStu
             <p className="card-text">Brand: {video.brand}</p>
             <p className="card-text">Gaya: {style?.name}</p>
             <p className="card-text">Durasi: {video.duration} detik · 9:16</p>
+            <p className="card-text">Rencana: versi {state.planVersion}</p>
             <p className="card-text">Dibuat: {new Date(video.createdAt).toLocaleDateString("id-ID", { dateStyle: "long" })}</p>
+            <button type="button" className="back-link" style={{ marginTop: 6 }} onClick={() => { reset(); setNote("Contoh dikembalikan ke kondisi awal."); setRevising(false); }}>
+              <RotateCcw size={14} aria-hidden="true" style={{ verticalAlign: -2 }} /> Atur ulang contoh
+            </button>
           </div>
         </aside>
       </div>

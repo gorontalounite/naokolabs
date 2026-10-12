@@ -8,12 +8,12 @@ import { findStyle, sampleVideos, statusInfo, type VideoStatus } from "@/lib/vid
 const filters: { id: "semua" | "aksi" | "proses" | "selesai"; label: string; match: (s: VideoStatus) => boolean }[] = [
   { id: "semua", label: "Semua", match: () => true },
   { id: "aksi", label: "Perlu tindakan", match: (s) => s === "rencana" || s === "hasil" || s === "siap" },
-  { id: "proses", label: "Diproduksi", match: (s) => s === "produksi" },
+  { id: "proses", label: "Diproduksi", match: (s) => s === "produksi" || s === "perbaikan" },
   { id: "selesai", label: "Terjadwal & terbit", match: (s) => s === "terjadwal" || s === "terbit" },
 ];
 
 const tone: Record<VideoStatus, string> = {
-  rencana: "badge-accent", produksi: "badge-warning", hasil: "badge-accent", siap: "badge-success", terjadwal: "badge-dark", terbit: "badge-success",
+  rencana: "badge-accent", produksi: "badge-warning", hasil: "badge-accent", perbaikan: "badge-warning", siap: "badge-success", terjadwal: "badge-dark", terbit: "badge-success",
 };
 
 export function HistoryList() {

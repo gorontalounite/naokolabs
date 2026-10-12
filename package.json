@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prompts:export": "tsx scripts/export-prompts.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.133.0",
@@ -30,6 +31,7 @@
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "4.2.1",
+    "tsx": "4.23.15",
     "typescript": "5.9.3"
   }
 }

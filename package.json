@@ -11,11 +11,15 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "prompts:export": "tsx scripts/export-prompts.ts"
+    "prompts:export": "tsx scripts/export-prompts.ts",
+    "render": "tsx scripts/render.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.133.0",
+    "@remotion/bundler": "4.0.535",
+    "@remotion/fonts": "4.0.535",
     "@remotion/player": "4.0.535",
+    "@remotion/renderer": "4.0.535",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.3",
     "lucide-react": "1.55.0",

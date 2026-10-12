@@ -5,7 +5,8 @@ import { FPS, HEIGHT, WIDTH, type SpecScene, type VideoSpec } from "./spec";
 // Pola gerak diambil dari ukuran video referensi: ≤ 4 kata per layar, satu aksi utama per adegan,
 // gerak menyambung (tanpa potongan keras), teks lengkap ditahan ≥ 1 detik.
 
-const FONT = 'var(--font-manrope), Manrope, "Helvetica Neue", Arial, sans-serif';
+// var(--font-manrope, Manrope): di dashboard memakai font Next, di render memakai Manrope dari video/public.
+const FONT = 'var(--font-manrope, Manrope), Manrope, "Helvetica Neue", Arial, sans-serif';
 const EXIT = 8; // frame memudar di akhir adegan
 
 type Palette = { bg: string; fg: string; muted: string; accent: string; card: string };
@@ -123,7 +124,7 @@ function ExScene({ scene, index, total, spec, pal }: { scene: SpecScene; index: 
 
   // Satu kanvas bertahap: langkah sebelumnya tetap terlihat (diredupkan), langkah baru tumbuh.
   const gap = Math.min(250, Math.floor(1100 / Math.max(steps.length, 1)));
-  const top = 360;
+  const top = Math.max(330, Math.round((HEIGHT - ((steps.length - 1) * gap + 104)) / 2));
   return (
     <AbsoluteFill style={{ opacity: fade }}>
       <div style={{ position: "absolute", top: 190, left: 100, right: 100, color: pal.muted, fontSize: 40, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>{spec.title}</div>

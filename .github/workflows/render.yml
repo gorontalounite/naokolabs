@@ -1,0 +1,63 @@
+name: render
+
+# Merender spesifikasi video (JSON dari storyboard) menjadi MP4 1080x1920 dengan Remotion (D-24).
+# Dua pemicu:
+#  - workflow_dispatch: dipakai aplikasi (spec_b64 = JSON dalam base64). Hanya bisa dipicu setelah file ini ada di branch utama.
+#  - push ke branch claude yang mengubah .github/render-test/spec.json: uji render tanpa aplikasi.
+on:
+  workflow_dispatch:
+    inputs:
+      video_id:
+        description: ID video
+        required: true
+        type: string
+      spec_b64:
+        description: Spesifikasi video (JSON, base64)
+        required: true
+        type: string
+  push:
+    branches: [claude]
+    paths: [".github/render-test/spec.json"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: render-${{ inputs.video_id || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Siapkan spesifikasi
+        env:
+          SPEC_B64: ${{ inputs.spec_b64 }}
+          VIDEO_ID: ${{ inputs.video_id || 'uji' }}
+        run: |
+          mkdir -p out
+          if [ -n "$SPEC_B64" ]; then
+            printf '%s' "$SPEC_B64" | base64 -d > out/spec.json
+          else
+            cp .github/render-test/spec.json out/spec.json
+          fi
+          echo "VIDEO_ID=$VIDEO_ID" >> "$GITHUB_ENV"
+          node -e 'const s=JSON.parse(require("fs").readFileSync("out/spec.json","utf8")); if(!Array.isArray(s.scenes)||!s.scenes.length) throw new Error("spesifikasi tanpa adegan")'
+      - name: Render MP4
+        run: npx tsx scripts/render.ts out/spec.json "out/${VIDEO_ID}.mp4"
+      - name: Periksa hasil
+        run: |
+          ffprobe -v error -show_entries format=duration:stream=width,height,codec_name -of compact "out/${VIDEO_ID}.mp4"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video-${{ env.VIDEO_ID }}
+          path: out/${{ env.VIDEO_ID }}.mp4
+          retention-days: 7
+          if-no-files-found: error
